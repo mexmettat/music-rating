@@ -79,9 +79,9 @@ CURATED_CATEGORIES = {
 }
 
 
-def search_catalog(query: str, filter_type: str = "all", limit: int = 24) -> List[Dict[str, Any]]:
+def search_catalog(query: str, filter_type: str = "all", limit: int = 50) -> List[Dict[str, Any]]:
     """
-    Searches Apple Music / iTunes API for albums and singles.
+    Searches Apple Music / iTunes API for albums and singles with smart artist discography lookup.
     filter_type: 'all', 'album', or 'single'
     """
     query = (query or "").strip()
@@ -97,16 +97,78 @@ def search_catalog(query: str, filter_type: str = "all", limit: int = 24) -> Lis
     seen_ids = set()
 
     try:
-        # 1. Fetch Albums (and Single-collections)
-        if filter_type in ("all", "album", "single"):
+        # Step A: If user is searching an artist (e.g. "charli xcx"), lookup their artist discography
+        # This returns all real studio albums (BRAT, Crash, Pop 2, Sucker etc.) that keyword search buries under 100 singles!
+        if filter_type in ("all", "album"):
+            try:
+                artist_resp = requests.get(
+                    "https://itunes.apple.com/search",
+                    params={
+                        "term": query,
+                        "entity": "musicArtist",
+                        "limit": 2,
+                    },
+                    timeout=4,
+                )
+                if artist_resp.status_code == 200:
+                    for aitem in artist_resp.json().get("results", []):
+                        aid = aitem.get("artistId")
+                        aname = aitem.get("artistName", "").lower()
+                        # If query closely matches artist name
+                        if aid and (query.lower() in aname or aname in query.lower()):
+                            discog_resp = requests.get(
+                                "https://itunes.apple.com/lookup",
+                                params={
+                                    "id": aid,
+                                    "entity": "album",
+                                    "limit": 100,
+                                },
+                                timeout=5,
+                            )
+                            if discog_resp.status_code == 200:
+                                for ditem in discog_resp.json().get("results", []):
+                                    if ditem.get("wrapperType") != "collection":
+                                        continue
+                                    col_id = ditem.get("collectionId")
+                                    if not col_id:
+                                        continue
+                                    rtype = _detect_release_type(ditem)
+                                    if filter_type == "album" and rtype != "album":
+                                        continue
+                                    if filter_type == "single" and rtype != "single":
+                                        continue
+                                    rel_id = f"itunes_{col_id}"
+                                    if rel_id in seen_ids:
+                                        continue
+                                    seen_ids.add(rel_id)
+                                    release_date = ditem.get("releaseDate", "")
+                                    year = release_date[:4] if release_date else ""
+                                    results.append({
+                                        "release_id": rel_id,
+                                        "source_id": str(col_id),
+                                        "release_type": rtype,
+                                        "title": _clean_release_title(ditem.get("collectionName", "")),
+                                        "raw_title": ditem.get("collectionName", ""),
+                                        "artist": ditem.get("artistName", "Bilinmeyen Sanatçı"),
+                                        "artwork_url": _hi_res_artwork(ditem.get("artworkUrl100", "")),
+                                        "year": year,
+                                        "genre": ditem.get("primaryGenreName", "Müzik"),
+                                        "track_count": ditem.get("trackCount", 1),
+                                        "apple_url": ditem.get("collectionViewUrl", ""),
+                                    })
+            except Exception as e:
+                print(f"[music_api] artist discography lookup error: {e}")
+
+        # Step B: General Album Search with higher limit (fetch up to 100 to catch true albums)
+        if filter_type in ("all", "album", "single") and len(results) < limit:
+            album_fetch_limit = 100 if filter_type == "album" else 50
             resp = requests.get(
                 "https://itunes.apple.com/search",
                 params={
                     "term": query,
                     "media": "music",
                     "entity": "album",
-                    "limit": limit,
-                    "country": "TR",
+                    "limit": album_fetch_limit,
                 },
                 timeout=6,
             )
@@ -141,9 +203,9 @@ def search_catalog(query: str, filter_type: str = "all", limit: int = 24) -> Lis
                         "apple_url": item.get("collectionViewUrl", ""),
                     })
 
-        # 2. Fetch Songs as Singles when filter_type is 'single' or 'all'
+        # Step C: Fetch Songs as Singles when filter_type is 'single' or 'all'
         if filter_type in ("all", "single") and len(results) < limit:
-            song_limit = 12 if filter_type == "all" else limit
+            song_limit = 24 if filter_type == "all" else 50
             resp_songs = requests.get(
                 "https://itunes.apple.com/search",
                 params={
@@ -151,7 +213,6 @@ def search_catalog(query: str, filter_type: str = "all", limit: int = 24) -> Lis
                     "media": "music",
                     "entity": "song",
                     "limit": song_limit,
-                    "country": "TR",
                 },
                 timeout=6,
             )

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}@{{ profile.user.username }} Müzik Profili — kitsu.ratings{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- User Profile Header -->
+    <section class="profile-header glass-panel">
+        <div class="profile-identity">
+            <div class="profile-avatar" data-bg="{{ profile.user.avatar_color or '#4338CA' }}">
+                {{ profile.user.username[0]|upper }}
+            </div>
+            <div>
+                <h1 class="profile-username">@{{ profile.user.username }}</h1>
+                <p class="profile-bio">{{ profile.user.bio or 'Müzik tutkunu & katalog eleştirmeni.' }}</p>
+            </div>
+        </div>
+
+        <div class="profile-stats-row">
+            <div class="p-stat-box">
+                <strong>{{ profile.release_count }}</strong>
+                <span>Albüm / Single (5 Kriter)</span>
+            </div>
+            <div class="p-stat-box">
+                <strong>{{ profile.track_count }}</strong>
+                <span>Tekil Şarkı (1-10 Puan)</span>
+            </div>
+            <div class="p-stat-box highlight">
+                <strong>{{ "%.2f"|format(profile.avg_given) if profile.release_count else "—" }}</strong>
+                <span>Genel Puan Ortalaması</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- User's 5-Criteria Tendency Breakdown -->
+    {% if profile.release_count > 0 %}
+        <section class="glass-panel mb-xl">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">5 Kriter Puanlama Karakteristiği</h2>
+                    <p class="panel-subtitle">@{{ profile.user.username }} kullanıcısının albüm ve single'larda verdiği kriter ortalamaları</p>
+                </div>
+            </div>
+            <div class="criteria-bars-grid five-cols">
+                {% for c in criteria_meta %}
+                    {% set v = profile.criteria_avgs[c.key] %}
+                    <div class="crit-bar-item">
+                        <div class="crit-bar-top">
+                            <span>{{ c.label }}</span>
+                            <strong>{{ "%.1f"|format(v) }}/10</strong>
+                        </div>
+                        <div class="crit-progress-track">
+                            <div class="crit-progress-fill" data-width="{{ v * 10 }}"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <div class="dual-section-grid">
+        <!-- Rated Albums & Singles (5 Criteria) -->
+        <section class="glass-panel">
+            <div class="panel-header">
+                <div class="panel-title-with-icon">
+                    <span class="svg-icon-box icon-green" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="panel-title">Albüm & Single Değerlendirmeleri ({{ profile.release_count }})</h2>
+                        <p class="panel-subtitle">5 kriter üzerinden puanlanan yapımlar</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feed-list">
+                {% for r in profile.release_ratings %}
+                    <div class="feed-card">
+                        <div class="feed-card-top">
+                            <a href="{{ url_for('release_detail', release_id=r.release_id) }}" class="feed-release-link">
+                                <img src="{{ r.artwork_url }}" alt="{{ r.release_title }}" class="feed-cover" />
+                                <div>
+                                    <h4>{{ r.release_title }}</h4>
+                                    <p>{{ r.artist_name }} <span class="mini-type">{{ 'SINGLE' if r.release_type == 'single' else 'ALBÜM' }}</span></p>
+                                </div>
+                            </a>
+                            <span class="big-score-pill {% if r.overall_score|float >= 8.5 %}score-high{% elif r.overall_score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                {{ "%.2f"|format(r.overall_score|float) }}/10
+                            </span>
+                        </div>
+                        <div class="feed-criteria-chips">
+                            <span>Prod: <b>{{ r.score_production }}</b></span>
+                            <span>Söz: <b>{{ r.score_lyrics }}</b></span>
+                            <span>Melodi: <b>{{ r.score_melody }}</b></span>
+                            <span>Vokal: <b>{{ r.score_vocals }}</b></span>
+                            <span>Tekrar: <b>{{ r.score_replay }}</b></span>
+                        </div>
+                        {% if r.review_text %}
+                            <p class="feed-review-text">"{{ r.review_text }}"</p>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="muted-text">Henüz 5 kriterli albüm veya single puanı verilmemiş.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Rated Individual Album Tracks (1-10 Score) -->
+        <section class="glass-panel">
+            <div class="panel-header">
+                <div class="panel-title-with-icon">
+                    <span class="svg-icon-box icon-indigo" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18V5l12-2v13"></path>
+                            <circle cx="6" cy="18" r="3"></circle>
+                            <circle cx="18" cy="16" r="3"></circle>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="panel-title">Tekil Şarkı Puanları ({{ profile.track_count }})</h2>
+                        <p class="panel-subtitle">Albüm içinden doğrudan 10 üzerinden puanlanan şarkılar</p>
+                    </div>
+                </div>
+            </div>
+            <div class="top-list">
+                {% for t in profile.track_ratings %}
+                    <a href="{{ url_for('release_detail', release_id=t.release_id) }}" class="top-list-row">
+                        <img src="{{ t.artwork_url }}" alt="{{ t.track_title }}" class="top-row-cover" />
+                        <div class="top-row-info">
+                            <div class="top-row-title">{{ t.track_title }}</div>
+                            <div class="top-row-artist">{{ t.artist_name }} • {{ t.release_title }}</div>
+                        </div>
+                        <div class="big-score-pill {% if t.score|float >= 8.5 %}score-high{% elif t.score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                            {{ "%.1f"|format(t.score|float) }}/10
+                        </div>
+                    </a>
+                {% else %}
+                    <p class="muted-text">Henüz albüm içinden tekil şarkı puanlanmamış.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

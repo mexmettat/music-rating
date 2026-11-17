@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}{{ query or 'Katalog Arama' }} — kitsu.ratings{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="glass-panel search-header-panel">
+        <form action="{{ url_for('search') }}" method="GET" class="search-page-form">
+            <label for="searchPageInput" class="sr-only">Sanatçı, albüm veya single adı</label>
+            <input
+                id="searchPageInput"
+                type="text"
+                name="q"
+                value="{{ query }}"
+                placeholder="Sanatçı, albüm veya single adı yazın..."
+                class="search-page-input"
+                autofocus
+            />
+            <input type="hidden" name="type" value="{{ filter_type }}" />
+            <button type="submit" class="btn btn-primary btn-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span>Ara</span>
+            </button>
+        </form>
+
+        <div class="filter-bar">
+            <span class="filter-label">Katalog Filtresi:</span>
+            <a href="{{ url_for('search', q=query, type='all') }}" class="cat-tab {% if filter_type == 'all' %}active{% endif %}">
+                <span>Tümü (Albüm + Single)</span>
+            </a>
+            <a href="{{ url_for('search', q=query, type='album') }}" class="cat-tab {% if filter_type == 'album' %}active{% endif %}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Sadece Albümler</span>
+            </a>
+            <a href="{{ url_for('search', q=query, type='single') }}" class="cat-tab {% if filter_type == 'single' %}active{% endif %}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M9 18V5l12-2v13"></path>
+                    <circle cx="6" cy="18" r="3"></circle>
+                    <circle cx="18" cy="16" r="3"></circle>
+                </svg>
+                <span>Sadece Single / Şarkılar</span>
+            </a>
+        </div>
+    </section>
+
+    {% if query %}
+        <div class="section-header mt-xl">
+            <h2 class="section-title">"{{ query }}" için {{ results|length }} sonuç bulundu</h2>
+        </div>
+
+        <div class="catalog-grid">
+            {% for item in results %}
+                <a href="{{ url_for('release_detail', release_id=item.release_id) }}" class="release-card">
+                    <div class="release-cover-wrap">
+                        <img src="{{ item.artwork_url }}" alt="{{ item.title }} - {{ item.artist }}" loading="lazy" class="release-cover" />
+                        <span class="release-type-badge {% if item.release_type == 'single' %}badge-single{% else %}badge-album{% endif %}">
+                            {% if item.release_type == 'single' %}SINGLE{% else %}ALBÜM{% endif %}
+                        </span>
+                        {% if item.community_score %}
+                            <span class="score-badge {% if item.community_score >= 8.5 %}score-high{% elif item.community_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                <span>{{ "%.1f"|format(item.community_score) }}</span>
+                            </span>
+                        {% endif %}
+                        <div class="card-hover-overlay">
+                            <span class="hover-cta">5 Kriterle Puanla</span>
+                        </div>
+                    </div>
+                    <div class="release-info">
+                        <h3 class="release-title" title="{{ item.title }}">{{ item.title }}</h3>
+                        <p class="release-artist">{{ item.artist }}</p>
+                        <div class="release-meta-row">
+                            <span>{{ item.year }}</span>
+                            <span>•</span>
+                            <span>{{ item.genre }}</span>
+                            {% if item.release_type == 'album' and item.track_count %}
+                                <span>• {{ item.track_count }} parça</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            {% else %}
+                <div class="empty-state glass-panel">
+                    <h3>Sonuç Bulunamadı</h3>
+                    <p>Farklı bir sanatçı veya albüm adı deneyebilirsiniz.</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

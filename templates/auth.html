@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Giriş Yap / Hesap Aç — kitsu.ratings{% endblock %}
+
+{% block content %}
+<div class="container auth-container">
+    <div class="auth-card glass-panel">
+        <div class="auth-tabs">
+            <a href="{{ url_for('auth_page', mode='login') }}" class="auth-tab {% if mode != 'register' %}active{% endif %}">Giriş Yap</a>
+            <a href="{{ url_for('auth_page', mode='register') }}" class="auth-tab {% if mode == 'register' %}active{% endif %}">Yeni Hesap Aç</a>
+        </div>
+
+        {% if mode == 'register' %}
+            <div class="auth-header">
+                <h2>kitsu.ratings'e Katıl</h2>
+                <p>Albüm ve single'ları 5 kriterle puanla, kendi müzik kataloğunu oluştur.</p>
+            </div>
+            <form action="{{ url_for('register_post') }}" method="POST" class="auth-form">
+                <div class="form-group">
+                    <label for="regUsername">Kullanıcı Adı</label>
+                    <input id="regUsername" type="text" name="username" placeholder="Örn: plaksever" required minlength="3" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">E-posta Adresi</label>
+                    <input id="regEmail" type="email" name="email" placeholder="ornek@mail.com" required class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Şifre</label>
+                    <input id="regPassword" type="password" name="password" placeholder="En az 5 karakter" required minlength="5" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label for="regBio">Kısa Biyografi / Favori Türlerin (Opsiyonel)</label>
+                    <input id="regBio" type="text" name="bio" placeholder="Örn: Indie Rock, Synthwave ve Türkçe Alternatif" class="form-input" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block btn-lg">Hesap Oluştur</button>
+            </form>
+        {% else %}
+            <div class="auth-header">
+                <h2>Tekrar Hoş Geldin</h2>
+                <p>Kaldığın yerden albümleri ve şarkıları puanlamaya devam et.</p>
+            </div>
+            <form action="{{ url_for('login_post') }}" method="POST" class="auth-form">
+                <input type="hidden" name="next" value="{{ request.args.get('next', '') }}" />
+                <div class="form-group">
+                    <label for="loginIdentifier">Kullanıcı Adı veya E-posta</label>
+                    <input id="loginIdentifier" type="text" name="identifier" placeholder="Kullanıcı adı veya e-posta" required class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Şifre</label>
+                    <input id="loginPassword" type="password" name="password" placeholder="••••••••" required class="form-input" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block btn-lg">Giriş Yap</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+{% block title %}{{ release.title }} — {{ release.artist }} | kitsu.ratings{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Section 1: Release Hero Banner + Aggregate Rating Breakdown -->
+    <section class="release-hero glass-panel">
+        <div class="release-hero-left">
+            <div class="release-hero-cover-wrap">
+                <img src="{{ release.artwork_url }}" alt="{{ release.title }} - {{ release.artist }}" class="release-hero-cover" />
+                {% if release.preview_url %}
+                    <button
+                        type="button"
+                        class="hero-play-btn play-preview-btn"
+                        data-url="{{ release.preview_url }}"
+                        data-title="{{ release.title }}"
+                        data-artist="{{ release.artist }}"
+                        data-artwork="{{ release.artwork_url }}"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        <span>30sn Önizleme Dinle</span>
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="release-hero-center">
+            <div class="release-badges-row">
+                <span class="release-type-pill {% if release.release_type == 'single' %}badge-single{% else %}badge-album{% endif %}">
+                    {% if release.release_type == 'single' %}
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                            <path d="M9 18V5l12-2v13"></path>
+                            <circle cx="6" cy="18" r="3"></circle>
+                            <circle cx="18" cy="16" r="3"></circle>
+                        </svg>
+                        <span>SINGLE</span>
+                    {% else %}
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span>ALBÜM ({{ release.track_count }} PARÇA)</span>
+                    {% endif %}
+                </span>
+                <span class="meta-pill">{{ release.genre }}</span>
+                {% if release.year %}
+                    <span class="meta-pill">{{ release.year }}</span>
+                {% endif %}
+                {% if release.parent_album_id and release.release_type == 'single' %}
+                    <a href="{{ url_for('release_detail', release_id=release.parent_album_id) }}" class="meta-pill link-pill">
+                        <span>Albüme Git: {{ release.parent_album_title }}</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </a>
+                {% endif %}
+            </div>
+
+            <h1 class="release-main-title">{{ release.title }}</h1>
+            <p class="release-main-artist">{{ release.artist }}</p>
+
+            <!-- Community 5-Criteria Bars -->
+            <div class="community-criteria-box">
+                <div class="criteria-box-title">
+                    <span>TOPLULUK 5 KRİTER ANALİZİ ({{ 'SINGLE' if release.release_type == 'single' else 'ALBÜM GENELİ' }})</span>
+                    <span id="communityVoteCount" class="vote-count-label">{{ ratings_data.count }} değerlendirme</span>
+                </div>
+                <div class="criteria-bars-grid">
+                    {% set avg_map = {
+                        'production': ratings_data.avg_production,
+                        'lyrics': ratings_data.avg_lyrics,
+                        'melody': ratings_data.avg_melody,
+                        'vocals': ratings_data.avg_vocals,
+                        'replay': ratings_data.avg_replay
+                    } %}
+                    {% for c in criteria_meta %}
+                        {% set val = avg_map[c.key] %}
+                        <div class="crit-bar-item">
+                            <div class="crit-bar-top">
+                                <span>{{ c.label }}</span>
+                                <strong id="comm_avg_{{ c.key }}">{{ "%.1f"|format(val) if ratings_data.count > 0 else "—" }}/10</strong>
+                            </div>
+                            <div class="crit-progress-track">
+                                <div
+                                    id="comm_bar_{{ c.key }}"
+                                    class="crit-progress-fill"
+                                    data-width="{{ (val * 10) if ratings_data.count > 0 else 0 }}"
+                                ></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Summary Cards (Overall 5-Criteria Score + Track Average Score) -->
+        <div class="release-hero-scores">
+            <div class="score-stat-card primary-score-card">
+                <span class="score-stat-label">
+                    {% if release.release_type == 'single' %}SINGLE GENEL PUANI{% else %}ALBÜM GENEL PUANI{% endif %}
+                </span>
+                <div id="communityOverallDisplay" class="score-stat-value">
+                    {% if ratings_data.avg_overall %}
+                        {{ "%.2f"|format(ratings_data.avg_overall) }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+                <span class="score-stat-sub">5 Kriter Ortalaması (/10)</span>
+            </div>
+
+            {% if release.release_type == 'album' %}
+                <div class="score-stat-card secondary-score-card">
+                    <span class="score-stat-label">ŞARKI BAZLI ORTALAMA</span>
+                    <div id="albumTracksAvgDisplay" class="score-stat-value">
+                        {% if track_summary.album_tracks_avg %}
+                            {{ "%.2f"|format(track_summary.album_tracks_avg) }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+                    <span class="score-stat-sub">Tekil Şarkı Puanları (/10)</span>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Section 2: Interactive Rating Workspace -->
+    <div class="release-workspace {% if release.release_type == 'single' %}single-layout{% endif %}">
+        <!-- LEFT COLUMN: 5-CRITERIA RATING FOR ALBUM AS A WHOLE OR SINGLE -->
+        <div class="workspace-col">
+            <section class="glass-panel rating-form-panel">
+                <div class="panel-header">
+                    <div>
+                        <span class="badge badge-cta">5 KRİTERLİ DEĞERLENDİRME</span>
+                        <h2 class="panel-title">
+                            {% if release.release_type == 'single' %}
+                                Bu Single'ı 5 Kriterle Puanla
+                            {% else %}
+                                Albümün Tamamını 5 Kriterle Puanla
+                            {% endif %}
+                        </h2>
+                        <p class="panel-subtitle">
+                            Her kriteri 1 ile 10 arasında puanlayın; genel puanınız otomatik hesaplanır.
+                        </p>
+                    </div>
+                    <div class="live-user-overall">
+                        <small>Senin Genel Puanın</small>
+                        <strong id="liveOverallScore">
+                            {% if ratings_data.user_rating %}
+                                {{ "%.2f"|format(ratings_data.user_rating.overall_score|float) }}
+                            {% else %}
+                                8.00
+                            {% endif %}
+                        </strong>
+                        <span>/ 10</span>
+                    </div>
+                </div>
+
+                {% if not current_user %}
+                    <div class="auth-prompt-banner">
+                        <div>
+                            <strong>Puan vermek için hesabınıza giriş yapın</strong>
+                            <p>5 kriterli albüm/single değerlendirmesi ve tekil şarkı puanlaması profilinize kaydedilir.</p>
+                        </div>
+                        <a href="{{ url_for('auth_page', mode='login', next=request.path) }}" class="btn btn-primary">Giriş Yap / Kayıt Ol</a>
+                    </div>
+                {% endif %}
+
+                <form id="releaseRatingForm" class="criteria-form">
+                    <input type="hidden" name="release_id" value="{{ release.release_id }}" />
+                    <input type="hidden" name="release_type" value="{{ release.release_type }}" />
+                    <input type="hidden" name="release_title" value="{{ release.title }}" />
+                    <input type="hidden" name="artist_name" value="{{ release.artist }}" />
+                    <input type="hidden" name="artwork_url" value="{{ release.artwork_url }}" />
+                    <input type="hidden" name="release_year" value="{{ release.year }}" />
+                    <input type="hidden" name="genre" value="{{ release.genre }}" />
+
+                    {% set user_r = ratings_data.user_rating %}
+                    {% for c in criteria_meta %}
+                        {% set default_val = user_r[c.field] if user_r else 8.0 %}
+                        <div class="slider-group">
+                            <div class="slider-label-row">
+                                <div>
+                                    <label for="input_{{ c.key }}" class="slider-title">{{ loop.index }}. {{ c.label }}</label>
+                                    <p class="slider-desc">{{ c.desc }}</p>
+                                </div>
+                                <div class="slider-val-badge">
+                                    <span id="val_{{ c.key }}">{{ "%.1f"|format(default_val|float) }}</span>
+                                    <small>/10</small>
+                                </div>
+                            </div>
+                            <input
+                                type="range"
+                                id="input_{{ c.key }}"
+                                name="{{ c.field }}"
+                                class="criteria-slider"
+                                min="1"
+                                max="10"
+                                step="0.5"
+                                value="{{ default_val }}"
+                                data-target="val_{{ c.key }}"
+                                data-disabled="{{ 'true' if not current_user else 'false' }}"
+                            />
+                            <div class="slider-ticks" aria-hidden="true">
+                                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                                <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <div class="form-group">
+                        <label for="reviewText" class="slider-title">İnceleme Notun (Opsiyonel)</label>
+                        <textarea
+                            id="reviewText"
+                            name="review_text"
+                            rows="3"
+                            class="review-textarea"
+                            placeholder="Bu {{ 'single' if release.release_type == 'single' else 'albüm' }} hakkında düşüncelerin, öne çıkan anlar..."
+                            data-disabled="{{ 'true' if not current_user else 'false' }}"
+                        >{{ user_r.review_text if user_r else '' }}</textarea>
+                    </div>
+
+                    <button
+                        type="submit"
+                        id="submitReleaseRatingBtn"
+                        class="btn btn-primary btn-block btn-lg"
+                        data-disabled="{{ 'true' if not current_user else 'false' }}"
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>
+                            {% if user_r %}
+                                5 Kriterli Puanımı Güncelle
+                            {% else %}
+                                5 Kriterli Puanı Kaydet
+                            {% endif %}
+                        </span>
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <!-- RIGHT COLUMN: TRACK-BY-TRACK 1-10 RATING (ONLY FOR ALBUMS!) -->
+        {% if release.release_type == 'album' %}
+            <div class="workspace-col">
+                <section class="glass-panel tracklist-panel">
+                    <div class="panel-header">
+                        <div>
+                            <span class="badge badge-indigo">ŞARKI BAZLI PUANLAMA (SADECE 10 ÜZERİNDEN)</span>
+                            <h2 class="panel-title">Albümdeki Şarkıları Tek Tek Puanla</h2>
+                            <p class="panel-subtitle">
+                                Albüm içindeki şarkılarda 5 kriter istenmez — istediğiniz şarkıya doğrudan <strong>1 ile 10 arasında</strong> puan verebilirsiniz.
+                            </p>
+                        </div>
+                        <div class="live-user-overall indigo-box">
+                            <small>Senin Şarkı Ort.</small>
+                            <strong id="userTracksAvgDisplay">
+                                {% if track_summary.user_tracks_avg %}
+                                    {{ "%.2f"|format(track_summary.user_tracks_avg) }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </strong>
+                            <span>/ 10</span>
+                        </div>
+                    </div>
+
+                    <div class="tracklist-container">
+                        {% for trk in release.tracks %}
+                            {% set t_stat = track_summary.track_stats.get(trk.track_id) %}
+                            {% set u_score = track_summary.user_tracks.get(trk.track_id) %}
+                            <div class="track-row" id="row_{{ trk.track_id }}">
+                                <div class="track-left">
+                                    <span class="track-num">{{ trk.track_number }}</span>
+                                    {% if trk.preview_url %}
+                                        <button
+                                            type="button"
+                                            class="track-play-btn play-preview-btn"
+                                            data-url="{{ trk.preview_url }}"
+                                            data-title="{{ trk.title }}"
+                                            data-artist="{{ trk.artist }}"
+                                            data-artwork="{{ release.artwork_url }}"
+                                            aria-label="{{ trk.title }} 30 saniye önizleme dinle"
+                                        >
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                            </svg>
+                                        </button>
+                                    {% endif %}
+                                    <div class="track-titles">
+                                        <div class="track-name-line">
+                                            <span class="track-name">{{ trk.title }}</span>
+                                            <span class="track-duration">{{ trk.duration }}</span>
+                                        </div>
+                                        <div class="track-sub-line">
+                                            <span>Topluluk: </span>
+                                            <strong id="trk_avg_{{ trk.track_id }}" class="trk-comm-score">
+                                                {% if t_stat %}
+                                                    {{ "%.1f"|format(t_stat.avg) }}/10 ({{ t_stat.count }} oy)
+                                                {% else %}
+                                                    Henüz puanlanmadı
+                                                {% endif %}
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 1-10 Direct Rating Control (No 5 Criteria!) -->
+                                <div class="track-right">
+                                    <div class="track-quick-rate"
+                                         data-release-id="{{ release.release_id }}"
+                                         data-track-id="{{ trk.track_id }}"
+                                         data-track-number="{{ trk.track_number }}"
+                                         data-track-title="{{ trk.title }}"
+                                         data-artist-name="{{ release.artist }}"
+                                         data-release-title="{{ release.title }}"
+                                         data-artwork-url="{{ release.artwork_url }}"
+                                    >
+                                        <div class="ten-buttons" role="group" aria-label="{{ trk.title }} için 1-10 arası puan seç">
+                                            {% for n in range(1, 11) %}
+                                                <button
+                                                    type="button"
+                                                    class="ten-btn {% if u_score and (u_score|round|int) == n %}active{% endif %}"
+                                                    data-score="{{ n }}"
+                                                    data-disabled="{{ 'true' if not current_user else 'false' }}"
+                                                >{{ n }}</button>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Section 3: Individual Community Reviews -->
+    <section class="glass-panel reviews-section">
+        <div class="panel-header">
+            <div>
+                <h2 class="panel-title">Topluluk Değerlendirmeleri ({{ ratings_data.count }})</h2>
+                <p class="panel-subtitle">Bu {{ 'single' if release.release_type == 'single' else 'albüm' }} için yapılan 5 kriterli kullanıcı incelemeleri</p>
+            </div>
+        </div>
+
+        <div class="reviews-grid">
+            {% for rev in ratings_data.reviews %}
+                <div class="review-card">
+                    <div class="review-card-header">
+                        <a href="{{ url_for('profile', username=rev.username) }}" class="reviewer-info">
+                            <span class="user-avatar">{{ rev.username[0]|upper }}</span>
+                            <div>
+                                <strong>@{{ rev.username }}</strong>
+                                <small>{{ rev.updated_at[:10] if rev.updated_at else '' }}</small>
+                            </div>
+                        </a>
+                        <div class="big-score-pill {% if rev.overall_score|float >= 8.5 %}score-high{% elif rev.overall_score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                            {{ "%.2f"|format(rev.overall_score|float) }} / 10
+                        </div>
+                    </div>
+
+                    <div class="review-criteria-grid">
+                        <div class="rc-item"><span>Prodüksiyon</span><strong>{{ rev.score_production }}</strong></div>
+                        <div class="rc-item"><span>Sözler</span><strong>{{ rev.score_lyrics }}</strong></div>
+                        <div class="rc-item"><span>Melodi</span><strong>{{ rev.score_melody }}</strong></div>
+                        <div class="rc-item"><span>Vokal</span><strong>{{ rev.score_vocals }}</strong></div>
+                        <div class="rc-item"><span>Tekrar</span><strong>{{ rev.score_replay }}</strong></div>
+                    </div>
+
+                    {% if rev.review_text %}
+                        <p class="review-body">"{{ rev.review_text }}"</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="empty-reviews">
+                    <p>Henüz kimse 5 kriterli değerlendirme bırakmadı. İlk puanlayan sen ol!</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

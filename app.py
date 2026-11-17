@@ -25,6 +25,7 @@ from services.db import (
     upsert_track_rating,
     get_album_track_ratings_summary,
     get_recent_reviews,
+    get_community_rated_releases,
     get_top_rated_releases,
     get_bulk_release_stats,
     get_user_profile_stats,
@@ -65,25 +66,32 @@ def login_required_json(f):
 
 @app.route("/")
 def index():
-    category = request.args.get("cat", "trending")
-    if category not in CURATED_CATEGORIES:
-        category = "trending"
+    sort_by = request.args.get("sort", "newest")
+    if sort_by not in ("newest", "score_desc", "score_asc", "most_reviewed"):
+        sort_by = "newest"
 
-    catalog_items = get_curated_catalog(category)
-    rel_ids = [item["release_id"] for item in catalog_items]
-    stats_map = get_bulk_release_stats(rel_ids)
-    for item in catalog_items:
-        st = stats_map.get(item["release_id"])
-        item["community_score"] = st["avg"] if st else None
-        item["community_count"] = st["count"] if st else 0
+    genre_filter = (request.args.get("genre") or "all").strip()
+    rtype_filter = (request.args.get("rtype") or "all").strip()
+    if rtype_filter not in ("all", "album", "single"):
+        rtype_filter = "all"
+
+    community_data = get_community_rated_releases(
+        sort_by=sort_by,
+        genre_filter=genre_filter,
+        rtype_filter=rtype_filter,
+    )
 
     top_releases = get_top_rated_releases(limit=6)
     recent_reviews = get_recent_reviews(limit=6)
 
     return render_template(
         "index.html",
-        catalog_items=catalog_items,
-        active_category=category,
+        rated_items=community_data["items"],
+        available_genres=community_data["genres"],
+        total_rated_count=community_data["total_count"],
+        active_sort=sort_by,
+        active_genre=genre_filter,
+        active_rtype=rtype_filter,
         top_releases=top_releases,
         recent_reviews=recent_reviews,
     )

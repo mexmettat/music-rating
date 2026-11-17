@@ -275,4 +275,141 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
+
+    // 6. Homepage Community Rated Grid: Instant Apple-Fluid Sorting & Filtering
+    const ratedGrid = document.getElementById('communityRatedGrid');
+    const noMatchState = document.getElementById('noFilterMatchState');
+    const sortButtons = document.querySelectorAll('.seg-btn[data-sort]');
+    const rtypeButtons = document.querySelectorAll('#rtypeFilterGroup .pill-btn[data-rtype]');
+    const genreButtons = document.querySelectorAll('#genreFilterGroup .pill-btn[data-genre]');
+
+    if (ratedGrid) {
+        let currentSort = document.querySelector('.seg-btn.active')?.dataset.sort || 'newest';
+        let currentRtype = document.querySelector('#rtypeFilterGroup .pill-btn.active')?.dataset.rtype || 'all';
+        let currentGenre = document.querySelector('#genreFilterGroup .pill-btn.active')?.dataset.genre || 'all';
+
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function applySortAndFilter() {
+            const cards = Array.from(ratedGrid.querySelectorAll('.rated-release-card'));
+            // Record initial positions for Apple FLIP transition
+            const firstRects = new Map();
+            if (!prefersReducedMotion) {
+                cards.forEach(c => {
+                    if (c.style.display !== 'none') {
+                        firstRects.set(c, c.getBoundingClientRect());
+                    }
+                });
+            }
+
+            // Filter
+            let visibleCount = 0;
+            cards.forEach(card => {
+                const cRtype = (card.dataset.rtype || '').toLowerCase();
+                const cGenre = (card.dataset.genre || '').toLowerCase();
+                const matchRtype = currentRtype === 'all' || cRtype === currentRtype.toLowerCase();
+                const matchGenre = currentGenre === 'all' || cGenre === currentGenre.toLowerCase();
+
+                if (matchRtype && matchGenre) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Sort
+            cards.sort((a, b) => {
+                const scoreA = parseFloat(a.dataset.score || '0');
+                const scoreB = parseFloat(b.dataset.score || '0');
+                const countA = parseInt(a.dataset.count || '0', 10);
+                const countB = parseInt(b.dataset.count || '0', 10);
+                const dateA = a.dataset.updated || '';
+                const dateB = b.dataset.updated || '';
+
+                if (currentSort === 'score_desc') {
+                    return (scoreB - scoreA) || (countB - countA) || dateB.localeCompare(dateA);
+                }
+                if (currentSort === 'score_asc') {
+                    return (scoreA - scoreB) || (countB - countA);
+                }
+                if (currentSort === 'most_reviewed') {
+                    return (countB - countA) || (scoreB - scoreA) || dateB.localeCompare(dateA);
+                }
+                // Default: newest
+                return dateB.localeCompare(dateA);
+            });
+
+            cards.forEach(card => ratedGrid.appendChild(card));
+
+            if (noMatchState) {
+                if (visibleCount === 0) {
+                    noMatchState.classList.remove('hidden');
+                } else {
+                    noMatchState.classList.add('hidden');
+                }
+            }
+
+            // Play FLIP critically-damped spring transition (Apple Design §4: damping 1.0, response 0.35s)
+            if (!prefersReducedMotion) {
+                cards.forEach(c => {
+                    if (c.style.display === 'none') return;
+                    const first = firstRects.get(c);
+                    const last = c.getBoundingClientRect();
+                    if (!first) {
+                        c.animate(
+                            [{ opacity: 0, transform: 'scale(0.96)' }, { opacity: 1, transform: 'scale(1)' }],
+                            { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+                        );
+                        return;
+                    }
+                    const dx = first.left - last.left;
+                    const dy = first.top - last.top;
+                    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                        c.animate(
+                            [
+                                { transform: `translate(${dx}px, ${dy}px)` },
+                                { transform: 'translate(0, 0)' }
+                            ],
+                            { duration: 340, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+                        );
+                    }
+                });
+            }
+
+            // Sync URL parameters without reload
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', currentSort);
+            url.searchParams.set('rtype', currentRtype);
+            url.searchParams.set('genre', currentGenre);
+            window.history.replaceState({}, '', url.toString());
+        }
+
+        sortButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                sortButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentSort = btn.dataset.sort;
+                applySortAndFilter();
+            });
+        });
+
+        rtypeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                rtypeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentRtype = btn.dataset.rtype;
+                applySortAndFilter();
+            });
+        });
+
+        genreButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                genreButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentGenre = btn.dataset.genre;
+                applySortAndFilter();
+            });
+        });
+    }
 });

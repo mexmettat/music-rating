@@ -3,34 +3,36 @@
 
 {% block content %}
 <div class="container">
-    <!-- Bento Hero Section (UI/UX Pro Max: Vibrant & Block-based + Product Review/Ratings Focused) -->
+    <!-- Bento Hero Section (Apple Fluid Translucent Material + Tactile Hierarchy) -->
     <section class="hero-bento">
         <div class="hero-main-block">
             <div class="hero-eyebrow">
                 <span class="pulse-dot" aria-hidden="true"></span>
-                <span>CANLI MÜZİK KATALOĞU & KRİTİK PLATFORMU</span>
+                <span>MÜZİK KATALOĞU & KRİTİK PLATFORMU</span>
             </div>
             <h1 class="hero-title">
-                Müziği Sadece Dinleme,<br />
+                Müziği Sadece Dinleme,<br/>
                 <span class="gradient-text">10 Üzerinden Kriterlerle Puanla.</span>
             </h1>
             <p class="hero-subtitle">
-                <strong>Albümlerin tamamını</strong> ve <strong>Single'ları</strong> 5 özel kriterle (Prodüksiyon,
-                Sözler, Melodi, Vokal, Tekrar Dinlenebilirlik) analiz et; ya da bir albümün içindeki <strong>şarkılara
-                    tek tek doğrudan 10 üzerinden</strong> puan ver.
+                <strong>Albümlerin tamamını</strong> ve <strong>Single'ları</strong> 5 özel kriterle (Prodüksiyon, Sözler, Melodi, Vokal, Tekrar Dinlenebilirlik) analiz et; ya da bir albümün içindeki <strong>şarkılara tek tek doğrudan 10 üzerinden</strong> puan ver.
             </p>
 
             <!-- Hero Quick Search -->
             <form action="{{ url_for('search') }}" method="GET" class="hero-search-box">
                 <label for="heroSearchInput" class="sr-only">Katalogda Ara</label>
                 <div class="hero-input-wrap">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    <input id="heroSearchInput" type="text" name="q"
-                        placeholder="Katalogda albüm, single veya sanatçı ara..." required />
+                    <input
+                        id="heroSearchInput"
+                        type="text"
+                        name="q"
+                        placeholder="Puanlamak istediğin albüm, single veya sanatçıyı ara..."
+                        required
+                    />
                 </div>
                 <label for="heroSearchType" class="sr-only">Tür Filtresi</label>
                 <select id="heroSearchType" name="type" class="hero-search-select">
@@ -40,8 +42,7 @@
                 </select>
                 <button type="submit" class="btn btn-primary">
                     <span>Katalogda Ara</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>
                     </svg>
@@ -49,7 +50,7 @@
             </form>
 
             <div class="hero-quick-tags">
-                <span class="tag-label">Trend Aramalar:</span>
+                <span class="tag-label">Hızlı Keşfet:</span>
                 <a href="{{ url_for('search', q='Daft Punk') }}" class="quick-tag">Daft Punk</a>
                 <a href="{{ url_for('search', q='Mor ve Ötesi') }}" class="quick-tag">Mor ve Ötesi</a>
                 <a href="{{ url_for('search', q='The Weeknd') }}" class="quick-tag">The Weeknd</a>
@@ -64,8 +65,7 @@
             <div class="bento-rule-card bento-indigo">
                 <div class="bento-card-head">
                     <span class="svg-icon-box icon-green" aria-hidden="true">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
@@ -78,7 +78,7 @@
                 <p class="bento-desc">5 ayrı kriter 10 üzerinden puanlanır, genel ortalama otomatik hesaplanır:</p>
                 <div class="criteria-mini-pills">
                     {% for c in criteria_meta %}
-                    <span class="c-pill">{{ c.label }}</span>
+                        <span class="c-pill">{{ c.label }}</span>
                     {% endfor %}
                 </div>
             </div>
@@ -86,8 +86,7 @@
             <div class="bento-rule-card bento-dark">
                 <div class="bento-card-head">
                     <span class="svg-icon-box icon-indigo" aria-hidden="true">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 18V5l12-2v13"></path>
                             <circle cx="6" cy="18" r="3"></circle>
                             <circle cx="18" cy="16" r="3"></circle>
@@ -98,86 +97,185 @@
                         <h3>Albüm İçi Tekil Şarkılar</h3>
                     </div>
                 </div>
-                <p class="bento-desc">Albümdeki diğer şarkılarda 5 kriter istenmez — her şarkıya doğrudan <strong>1 ile
-                        10 arasında</strong> tek tıkla puan verilir.</p>
+                <p class="bento-desc">Albümdeki diğer şarkılarda 5 kriter istenmez — her şarkıya doğrudan <strong>1 ile 10 arasında</strong> tek tıkla puan verilir.</p>
                 <div class="mini-ten-scale" aria-hidden="true">
-                    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span
-                        class="active">8</span><span class="active">9</span><span class="active">10</span>
+                    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span class="active">8</span><span class="active">9</span><span class="active">10</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Catalog Section with Category Tabs -->
-    <section class="section-block">
-        <div class="section-header">
-            <div>
-                <h2 class="section-title">Müzik Kataloğunu Keşfet</h2>
-                <p class="section-desc">İncelemek, 30sn dinlemek ve puanlamak için bir albüm veya single seçin</p>
+    <!-- Community Rated Releases Section (Apple-Style Segmented Controls & Filters) -->
+    <section class="section-block" id="ratedCatalogSection">
+        <div class="rated-toolbar glass-panel">
+            <div class="rated-toolbar-top">
+                <div>
+                    <span class="badge badge-cta">TOPLULUK AKIŞI</span>
+                    <h2 class="section-title">Puanlanan Albüm & Single'lar</h2>
+                    <p class="section-desc">Kullanıcıların değerlendirdiği yapımlar — varsayılan olarak en yeni puanlananlar listelenir</p>
+                </div>
+
+                <!-- Sort Segmented Control -->
+                <div class="apple-segmented" role="group" aria-label="Sıralama Ölçütü">
+                    <button
+                        type="button"
+                        class="seg-btn {% if active_sort == 'newest' %}active{% endif %}"
+                        data-sort="newest"
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <span>Yeni Puanlanan</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="seg-btn {% if active_sort == 'score_desc' %}active{% endif %}"
+                        data-sort="score_desc"
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                            <polyline points="18 15 12 9 6 15"></polyline>
+                        </svg>
+                        <span>Puan (Yüksek)</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="seg-btn {% if active_sort == 'score_asc' %}active{% endif %}"
+                        data-sort="score_asc"
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                        <span>Puan (Düşük)</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="seg-btn {% if active_sort == 'most_reviewed' %}active{% endif %}"
+                        data-sort="most_reviewed"
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                        </svg>
+                        <span>En Çok Oy</span>
+                    </button>
+                </div>
             </div>
-            <div class="category-tabs">
-                {% for cat_key, cat_val in curated_categories.items() %}
-                <a href="{{ url_for('index', cat=cat_key) }}"
-                    class="cat-tab {% if active_category == cat_key %}active{% endif %}">
-                    {{ cat_val.label }}
-                </a>
+
+            <!-- Filter Row: Format (Album/Single) + Genre Pills -->
+            <div class="rated-toolbar-filters">
+                <div class="filter-group">
+                    <span class="filter-group-label">Format:</span>
+                    <div class="apple-pills" id="rtypeFilterGroup">
+                        <button type="button" class="pill-btn {% if active_rtype == 'all' %}active{% endif %}" data-rtype="all">Tümü</button>
+                        <button type="button" class="pill-btn {% if active_rtype == 'album' %}active{% endif %}" data-rtype="album">Albüm</button>
+                        <button type="button" class="pill-btn {% if active_rtype == 'single' %}active{% endif %}" data-rtype="single">Single</button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <span class="filter-group-label">Tür:</span>
+                    <div class="apple-pills" id="genreFilterGroup">
+                        <button type="button" class="pill-btn {% if active_genre == 'all' %}active{% endif %}" data-genre="all">Tüm Türler</button>
+                        {% for g in available_genres %}
+                            <button
+                                type="button"
+                                class="pill-btn {% if active_genre|lower == g|lower %}active{% endif %}"
+                                data-genre="{{ g }}"
+                            >{{ g }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Rated Grid -->
+        {% if rated_items %}
+            <div class="catalog-grid" id="communityRatedGrid">
+                {% for item in rated_items %}
+                    <a
+                        href="{{ url_for('release_detail', release_id=item.release_id) }}"
+                        class="release-card rated-release-card"
+                        data-score="{{ item.avg_score }}"
+                        data-updated="{{ item.latest_updated_at }}"
+                        data-count="{{ item.rating_count }}"
+                        data-genre="{{ item.genre }}"
+                        data-rtype="{{ item.release_type }}"
+                    >
+                        <div class="release-cover-wrap">
+                            <img src="{{ item.artwork_url }}" alt="{{ item.title }} - {{ item.artist }} kapağı" loading="lazy" class="release-cover" />
+                            <span class="release-type-badge {% if item.release_type == 'single' %}badge-single{% else %}badge-album{% endif %}">
+                                {% if item.release_type == 'single' %}SINGLE{% else %}ALBÜM{% endif %}
+                            </span>
+
+                            <span class="score-badge {% if item.avg_score >= 8.5 %}score-high{% elif item.avg_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                <span>{{ "%.2f"|format(item.avg_score) }}</span>
+                            </span>
+
+                            <div class="card-hover-overlay">
+                                <span class="hover-cta">
+                                    <span>İncele & Puanla</span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        <polyline points="12 5 19 12 12 19"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="release-info">
+                            <h3 class="release-title" title="{{ item.title }}">{{ item.title }}</h3>
+                            <p class="release-artist">{{ item.artist }}</p>
+                            <div class="release-meta-row">
+                                <span>{{ item.year or '—' }}</span>
+                                <span>•</span>
+                                <span class="genre-chip-inline">{{ item.genre }}</span>
+                                <span>•</span>
+                                <span>{{ item.rating_count }} oy</span>
+                            </div>
+
+                            <!-- Mini 5-Criteria Bar Summary on Card -->
+                            <div class="card-criteria-strip">
+                                <span title="Prodüksiyon">P <b>{{ item.avg_production }}</b></span>
+                                <span title="Sözler">S <b>{{ item.avg_lyrics }}</b></span>
+                                <span title="Melodi">M <b>{{ item.avg_melody }}</b></span>
+                                <span title="Vokal">V <b>{{ item.avg_vocals }}</b></span>
+                                <span title="Tekrar">T <b>{{ item.avg_replay }}</b></span>
+                            </div>
+
+                            {% if item.latest_review %}
+                                <p class="card-review-snippet">"{{ item.latest_review }}" — <span>@{{ item.latest_username }}</span></p>
+                            {% elif item.latest_username %}
+                                <p class="card-review-snippet">Son puanlayan: <span>@{{ item.latest_username }}</span> ({{ "%.1f"|format(item.latest_user_score) }}/10)</p>
+                            {% endif %}
+                        </div>
+                    </a>
                 {% endfor %}
             </div>
-        </div>
-
-        <div class="catalog-grid">
-            {% for item in catalog_items %}
-            <a href="{{ url_for('release_detail', release_id=item.release_id) }}" class="release-card">
-                <div class="release-cover-wrap">
-                    <img src="{{ item.artwork_url }}" alt="{{ item.title }} - {{ item.artist }} kapağı" loading="lazy"
-                        class="release-cover" />
-                    <span
-                        class="release-type-badge {% if item.release_type == 'single' %}badge-single{% else %}badge-album{% endif %}">
-                        {% if item.release_type == 'single' %}SINGLE{% else %}ALBÜM{% endif %}
-                    </span>
-
-                    {% if item.community_score %}
-                    <span
-                        class="score-badge {% if item.community_score >= 8.5 %}score-high{% elif item.community_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <polygon
-                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-                            </polygon>
-                        </svg>
-                        <span>{{ "%.1f"|format(item.community_score) }}</span>
-                    </span>
-                    {% endif %}
-
-                    <div class="card-hover-overlay">
-                        <span class="hover-cta">
-                            <span>Puanla & İncele</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                <polyline points="12 5 19 12 12 19"></polyline>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-                <div class="release-info">
-                    <h3 class="release-title" title="{{ item.title }}">{{ item.title }}</h3>
-                    <p class="release-artist">{{ item.artist }}</p>
-                    <div class="release-meta-row">
-                        <span>{{ item.year }}</span>
-                        <span>•</span>
-                        <span>{{ item.genre }}</span>
-                        {% if item.release_type == 'album' and item.track_count %}
-                        <span>• {{ item.track_count }} parça</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </a>
-            {% else %}
-            <div class="empty-state glass-panel">
-                <p>Katalog yüklenirken bağlantı kurulamadı. Lütfen yukarıdaki arama çubuğunu kullanın.</p>
+            <div id="noFilterMatchState" class="empty-state glass-panel hidden">
+                <h3>Seçtiğiniz filtreye uygun puanlanmış albüm/single bulunamadı</h3>
+                <p>Filtreleri sıfırlayabilir veya yukarıdaki arama çubuğundan yeni bir albüm arayıp puanlayabilirsiniz.</p>
             </div>
-            {% endfor %}
-        </div>
+        {% else %}
+            <div class="empty-state glass-panel">
+                <div class="empty-icon-wrap" aria-hidden="true">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </div>
+                <h3>Henüz Puanlanan Bir Albüm veya Single Yok</h3>
+                <p>Yukarıdaki arama çubuğundan sevdiğin bir sanatçıyı, albümü veya single'ı aratıp ilk 5 kriterli değerlendirmeyi sen bırak! Puanladığın an burada listelenecek.</p>
+                <div class="empty-quick-actions">
+                    <a href="{{ url_for('search', q='Daft Punk') }}" class="btn btn-primary btn-sm">Daft Punk Ara</a>
+                    <a href="{{ url_for('search', q='Mor ve Ötesi') }}" class="btn btn-ghost btn-sm">Mor ve Ötesi Ara</a>
+                    <a href="{{ url_for('search', q='The Weeknd') }}" class="btn btn-ghost btn-sm">The Weeknd Ara</a>
+                </div>
+            </div>
+        {% endif %}
     </section>
 
     <!-- Two Column Bottom Bento: Top Rated & Recent 5-Criteria Reviews -->
@@ -187,8 +285,7 @@
             <div class="panel-header">
                 <div class="panel-title-with-icon">
                     <span class="svg-icon-box icon-green" aria-hidden="true">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
                             <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
                             <path d="M4 22h16"></path>
@@ -207,35 +304,34 @@
 
             <div class="top-list">
                 {% for item in top_releases %}
-                <a href="{{ url_for('release_detail', release_id=item.release_id) }}" class="top-list-row">
-                    <span class="rank-num">#{{ loop.index }}</span>
-                    <img src="{{ item.artwork_url }}" alt="{{ item.title }}" class="top-row-cover" />
-                    <div class="top-row-info">
-                        <div class="top-row-title">
-                            <span>{{ item.title }}</span>
-                            <span class="mini-type">{{ 'SINGLE' if item.release_type == 'single' else 'ALBÜM' }}</span>
+                    <a href="{{ url_for('release_detail', release_id=item.release_id) }}" class="top-list-row">
+                        <span class="rank-num">#{{ loop.index }}</span>
+                        <img src="{{ item.artwork_url }}" alt="{{ item.title }}" class="top-row-cover" />
+                        <div class="top-row-info">
+                            <div class="top-row-title">
+                                <span>{{ item.title }}</span>
+                                <span class="mini-type">{{ 'SINGLE' if item.release_type == 'single' else 'ALBÜM' }}</span>
+                            </div>
+                            <div class="top-row-artist">{{ item.artist }} • {{ item.year }}</div>
+                            <div class="top-row-mini-bars">
+                                <span title="Prodüksiyon">P: {{ item.avg_production }}</span>
+                                <span title="Sözler">S: {{ item.avg_lyrics }}</span>
+                                <span title="Melodi">M: {{ item.avg_melody }}</span>
+                                <span title="Vokal">V: {{ item.avg_vocals }}</span>
+                                <span title="Tekrar">T: {{ item.avg_replay }}</span>
+                            </div>
                         </div>
-                        <div class="top-row-artist">{{ item.artist }} • {{ item.year }}</div>
-                        <div class="top-row-mini-bars">
-                            <span title="Prodüksiyon">P: {{ item.avg_production }}</span>
-                            <span title="Sözler">S: {{ item.avg_lyrics }}</span>
-                            <span title="Melodi">M: {{ item.avg_melody }}</span>
-                            <span title="Vokal">V: {{ item.avg_vocals }}</span>
-                            <span title="Tekrar">T: {{ item.avg_replay }}</span>
+                        <div class="top-row-score">
+                            <div class="big-score-pill {% if item.avg_score >= 8.5 %}score-high{% elif item.avg_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                {{ "%.2f"|format(item.avg_score) }}
+                            </div>
+                            <small>{{ item.rating_count }} oy</small>
                         </div>
-                    </div>
-                    <div class="top-row-score">
-                        <div
-                            class="big-score-pill {% if item.avg_score >= 8.5 %}score-high{% elif item.avg_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
-                            {{ "%.2f"|format(item.avg_score) }}
-                        </div>
-                        <small>{{ item.rating_count }} oy</small>
-                    </div>
-                </a>
+                    </a>
                 {% else %}
-                <div class="empty-inline">
-                    <p class="muted-text">Henüz puanlanan yapım yok. Katalogdan bir albüm seçerek ilk puanı sen ver!</p>
-                </div>
+                    <div class="empty-inline">
+                        <p class="muted-text">Henüz puanlanan yapım yok. Katalogdan bir albüm arayıp ilk puanı sen ver!</p>
+                    </div>
                 {% endfor %}
             </div>
         </section>
@@ -245,8 +341,7 @@
             <div class="panel-header">
                 <div class="panel-title-with-icon">
                     <span class="svg-icon-box icon-indigo" aria-hidden="true">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                         </svg>
                     </span>
@@ -259,40 +354,37 @@
 
             <div class="feed-list">
                 {% for rev in recent_reviews %}
-                <div class="feed-card">
-                    <div class="feed-card-top">
-                        <a href="{{ url_for('release_detail', release_id=rev.release_id) }}" class="feed-release-link">
-                            <img src="{{ rev.artwork_url }}" alt="{{ rev.release_title }}" class="feed-cover" />
-                            <div>
-                                <h4>{{ rev.release_title }}</h4>
-                                <p>{{ rev.artist_name }} <span class="mini-type">{{ 'SINGLE' if rev.release_type ==
-                                        'single' else 'ALBÜM' }}</span></p>
+                    <div class="feed-card">
+                        <div class="feed-card-top">
+                            <a href="{{ url_for('release_detail', release_id=rev.release_id) }}" class="feed-release-link">
+                                <img src="{{ rev.artwork_url }}" alt="{{ rev.release_title }}" class="feed-cover" />
+                                <div>
+                                    <h4>{{ rev.release_title }}</h4>
+                                    <p>{{ rev.artist_name }} <span class="mini-type">{{ 'SINGLE' if rev.release_type == 'single' else 'ALBÜM' }}</span></p>
+                                </div>
+                            </a>
+                            <div class="feed-score-box">
+                                <span class="big-score-pill {% if rev.overall_score|float >= 8.5 %}score-high{% elif rev.overall_score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                    {{ "%.1f"|format(rev.overall_score|float) }}/10
+                                </span>
+                                <a href="{{ url_for('profile', username=rev.username) }}" class="feed-user">@{{ rev.username }}</a>
                             </div>
-                        </a>
-                        <div class="feed-score-box">
-                            <span
-                                class="big-score-pill {% if rev.overall_score|float >= 8.5 %}score-high{% elif rev.overall_score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
-                                {{ "%.1f"|format(rev.overall_score|float) }}/10
-                            </span>
-                            <a href="{{ url_for('profile', username=rev.username) }}" class="feed-user">@{{ rev.username
-                                }}</a>
                         </div>
+                        <div class="feed-criteria-chips">
+                            <span>Prodüksiyon: <b>{{ rev.score_production }}</b></span>
+                            <span>Sözler: <b>{{ rev.score_lyrics }}</b></span>
+                            <span>Melodi: <b>{{ rev.score_melody }}</b></span>
+                            <span>Vokal: <b>{{ rev.score_vocals }}</b></span>
+                            <span>Tekrar: <b>{{ rev.score_replay }}</b></span>
+                        </div>
+                        {% if rev.review_text %}
+                            <p class="feed-review-text">"{{ rev.review_text }}"</p>
+                        {% endif %}
                     </div>
-                    <div class="feed-criteria-chips">
-                        <span>Prodüksiyon: <b>{{ rev.score_production }}</b></span>
-                        <span>Sözler: <b>{{ rev.score_lyrics }}</b></span>
-                        <span>Melodi: <b>{{ rev.score_melody }}</b></span>
-                        <span>Vokal: <b>{{ rev.score_vocals }}</b></span>
-                        <span>Tekrar: <b>{{ rev.score_replay }}</b></span>
-                    </div>
-                    {% if rev.review_text %}
-                    <p class="feed-review-text">"{{ rev.review_text }}"</p>
-                    {% endif %}
-                </div>
                 {% else %}
-                <div class="empty-inline">
-                    <p class="muted-text">Henüz değerlendirme yapılmamış.</p>
-                </div>
+                    <div class="empty-inline">
+                        <p class="muted-text">Henüz değerlendirme yapılmamış.</p>
+                    </div>
                 {% endfor %}
             </div>
         </section>

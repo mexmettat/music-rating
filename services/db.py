@@ -589,6 +589,134 @@ def get_recent_reviews(limit: int = 10) -> List[Dict[str, Any]]:
         conn.close()
 
 
+def get_community_rated_releases(
+    sort_by: str = "newest",
+    genre_filter: str = "all",
+    rtype_filter: str = "all",
+) -> Dict[str, Any]:
+    """
+    Aggregates all albums & singles rated by users on the platform.
+    Supports sorting:
+      - 'newest' (default: most recently rated/reviewed first)
+      - 'score_desc' (highest average score first)
+      - 'score_asc' (lowest average score first)
+      - 'most_reviewed' (most ratings count first)
+    Supports filtering by genre and release_type ('album' / 'single').
+    """
+    rows: List[Dict[str, Any]] = []
+    if _use_supabase():
+        cfg = _get_supabase_config()
+        resp = requests.get(
+            f"{cfg['url']}/rest/v1/release_ratings?select=*&order=updated_at.desc&limit=500",
+            headers=_supabase_headers(cfg["key"]),
+            timeout=5,
+        )
+        if resp.status_code == 200:
+            rows = resp.json()
+    else:
+        conn = _get_sqlite_conn()
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM release_ratings ORDER BY updated_at DESC")
+            rows = [dict(r) for r in cur.fetchall()]
+        finally:
+            conn.close()
+
+    grouped: Dict[str, Dict[str, Any]] = {}
+    genres_set = set()
+
+    for r in rows:
+        rid = r["release_id"]
+        g = (r.get("genre") or "").strip()
+        if g:
+            genres_set.add(g)
+
+        if rid not in grouped:
+            grouped[rid] = {
+                "release_id": rid,
+                "release_type": r.get("release_type", "album"),
+                "title": r.get("release_title", "Bilinmeyen Yapım"),
+                "artist": r.get("artist_name", "Bilinmeyen Sanatçı"),
+                "artwork_url": r.get("artwork_url", ""),
+                "year": r.get("release_year", ""),
+                "genre": g or "Müzik",
+                "latest_updated_at": r.get("updated_at", ""),
+                "latest_username": r.get("username", ""),
+                "latest_review": r.get("review_text", ""),
+                "latest_user_score": float(r.get("overall_score", 0)),
+                "scores": [],
+                "prod": [],
+                "lyr": [],
+                "mel": [],
+                "voc": [],
+                "rep": [],
+            }
+        else:
+            # Since rows are ordered by updated_at DESC, the first row seen has the latest timestamp,
+            # but if an earlier row had no review text and a newer one has text, keep latest info accurate
+            if r.get("updated_at", "") > grouped[rid]["latest_updated_at"]:
+                grouped[rid]["latest_updated_at"] = r.get("updated_at", "")
+                grouped[rid]["latest_username"] = r.get("username", "")
+                grouped[rid]["latest_user_score"] = float(r.get("overall_score", 0))
+            if not grouped[rid]["latest_review"] and r.get("review_text"):
+                grouped[rid]["latest_review"] = r.get("review_text", "")
+                grouped[rid]["latest_username"] = r.get("username", "")
+
+        grouped[rid]["scores"].append(float(r["overall_score"]))
+        grouped[rid]["prod"].append(float(r["score_production"]))
+        grouped[rid]["lyr"].append(float(r["score_lyrics"]))
+        grouped[rid]["mel"].append(float(r["score_melody"]))
+        grouped[rid]["voc"].append(float(r["score_vocals"]))
+        grouped[rid]["rep"].append(float(r["score_replay"]))
+
+    items: List[Dict[str, Any]] = []
+    for rid, info in grouped.items():
+        if genre_filter and genre_filter != "all":
+            if info["genre"].lower() != genre_filter.lower():
+                continue
+        if rtype_filter in ("album", "single"):
+            if info["release_type"] != rtype_filter:
+                continue
+
+        cnt = len(info["scores"])
+        items.append({
+            "release_id": rid,
+            "release_type": info["release_type"],
+            "title": info["title"],
+            "artist": info["artist"],
+            "artwork_url": info["artwork_url"],
+            "year": info["year"],
+            "genre": info["genre"],
+            "latest_updated_at": info["latest_updated_at"],
+            "latest_username": info["latest_username"],
+            "latest_review": info["latest_review"],
+            "latest_user_score": info["latest_user_score"],
+            "avg_score": round(sum(info["scores"]) / cnt, 2),
+            "avg_production": round(sum(info["prod"]) / cnt, 1),
+            "avg_lyrics": round(sum(info["lyr"]) / cnt, 1),
+            "avg_melody": round(sum(info["mel"]) / cnt, 1),
+            "avg_vocals": round(sum(info["voc"]) / cnt, 1),
+            "avg_replay": round(sum(info["rep"]) / cnt, 1),
+            "rating_count": cnt,
+        })
+
+    if sort_by == "score_desc":
+        items.sort(key=lambda x: (x["avg_score"], x["rating_count"], x["latest_updated_at"]), reverse=True)
+    elif sort_by == "score_asc":
+        items.sort(key=lambda x: (x["avg_score"], -x["rating_count"]))
+    elif sort_by == "most_reviewed":
+        items.sort(key=lambda x: (x["rating_count"], x["avg_score"], x["latest_updated_at"]), reverse=True)
+    else:
+        # Default: 'newest' (En Yeni Puanlananlar)
+        items.sort(key=lambda x: x["latest_updated_at"], reverse=True)
+
+    return {
+        "items": items,
+        "genres": sorted(list(genres_set)),
+        "total_count": len(grouped),
+    }
+
+
 def get_top_rated_releases(limit: int = 12) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     if _use_supabase():

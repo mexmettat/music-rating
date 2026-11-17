@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block title %}69. Grammy Tahmin & Favoriler — kitsuratings{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Grammy Hero Banner (Apple Glassmorphism + Trophy Glow) -->
+    <section class="glass-panel grammy-hero">
+        <div class="grammy-hero-content">
+            <div class="grammy-eyebrow">
+                <span class="grammy-trophy-icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="6"></circle>
+                        <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path>
+                    </svg>
+                </span>
+                <span class="badge badge-grammy">69. GRAMMY ÖDÜLLERİ</span>
+            </div>
+            <h1 class="grammy-title">
+                69. Grammy <span class="gradient-gold-text">Tahmin & Favoriler</span>
+            </h1>
+            <p class="grammy-subtitle">
+                Ana Kategoriler (Big Four) ve Pop alanında yarışan adaylar için iki bağımsız seçim yap:
+                <strong class="highlight-gold">🏆 Kim Kazanacak?</strong> (Akıl tahmini) ve
+                <strong class="highlight-green">💚 Kimin Kazanmasını İstersin?</strong> (Gönlündeki favori).
+                Topluluğun canlı tahmin oranlarını anında gör!
+            </p>
+
+            <!-- Apple-style Segmented Category Filter -->
+            <div class="grammy-filter-nav">
+                <button type="button" class="grammy-tab-btn active" data-filter="all">
+                    <span>Tüm Kategoriler (7)</span>
+                </button>
+                <button type="button" class="grammy-tab-btn" data-filter="big_four">
+                    <span>Big Four (Ana 4)</span>
+                </button>
+                <button type="button" class="grammy-tab-btn" data-filter="pop">
+                    <span>Pop Kategorileri (3)</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Stream -->
+    <div class="grammy-categories-stream">
+        {% for cat in categories %}
+        {% set cid = cat.id %}
+        {% set c_stats = stats.get(cid, {}) %}
+        {% set c_user = user_picks.get(cid, {}) %}
+        {% set my_winner = c_user.get('winner', '') %}
+        {% set my_fav = c_user.get('favorite', '') %}
+        {% set win_pcts = c_stats.get('winner_percentages', {}) %}
+        {% set fav_pcts = c_stats.get('favorite_percentages', {}) %}
+
+        <section class="glass-panel grammy-category-card" data-field="{{ 'big_four' if cat.field_badge == 'Big Four' else 'pop' }}" id="cat-{{ cid }}">
+            <div class="category-header">
+                <div class="category-title-group">
+                    <span class="badge {% if cat.field_badge == 'Big Four' %}badge-gold{% else %}badge-purple{% endif %}">
+                        {{ cat.field_badge }}
+                    </span>
+                    <h2 class="category-title">{{ cat.title }}</h2>
+                    <p class="category-desc">{{ cat.desc }}</p>
+                </div>
+                <div class="category-vote-meta">
+                    <span class="vote-meta-pill">
+                        <span class="dot-gold"></span>
+                        <span class="winner-count-label">{{ c_stats.get('total_winner_votes', 0) }}</span> tahmin
+                    </span>
+                    <span class="vote-meta-pill">
+                        <span class="dot-green"></span>
+                        <span class="fav-count-label">{{ c_stats.get('total_favorite_votes', 0) }}</span> favori
+                    </span>
+                </div>
+            </div>
+
+            <!-- Nominees Grid -->
+            <div class="nominees-grid">
+                {% for nom in cat.nominees %}
+                {% set nid = nom.id %}
+                {% set is_my_winner = (my_winner == nid) %}
+                {% set is_my_fav = (my_fav == nid) %}
+                {% set w_pct = win_pcts.get(nid, 0.0) %}
+                {% set f_pct = fav_pcts.get(nid, 0.0) %}
+
+                <div class="nominee-card {% if is_my_winner %}picked-winner{% endif %} {% if is_my_fav %}picked-fav{% endif %}" data-nominee-id="{{ nid }}" data-category-id="{{ cid }}">
+                    <div class="nominee-artwork-wrap">
+                        <img src="{{ nom.artwork }}" alt="{{ nom.title }} - {{ nom.artist }}" class="nominee-artwork" loading="lazy" />
+                        
+                        <!-- Badges for active user picks -->
+                        <div class="nominee-active-badges">
+                            <span class="active-badge badge-trophy {% if not is_my_winner %}hidden{% endif %}" title="Senin Kazanır Tahminin">
+                                🏆 Kazanır
+                            </span>
+                            <span class="active-badge badge-heart {% if not is_my_fav %}hidden{% endif %}" title="Senin Favorin">
+                                💚 Favorim
+                            </span>
+                        </div>
+
+                        {% if nom.release_id %}
+                        <a href="{{ url_for('release_detail', release_id=nom.release_id) }}" class="nominee-rate-link" title="Bu yapımı 5 kriterle puanla">
+                            <span>Katalogda Gör</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="nominee-details">
+                        <h3 class="nominee-title" title="{{ nom.title }}">{{ nom.title }}</h3>
+                        <p class="nominee-artist" title="{{ nom.artist }}">{{ nom.artist }}</p>
+
+                        <!-- Live Community Stats Bars -->
+                        <div class="nominee-stats-block">
+                            <!-- Winner Stat -->
+                            <div class="stat-row">
+                                <div class="stat-labels">
+                                    <span class="stat-name highlight-gold">🏆 Kazanır</span>
+                                    <span class="stat-val stat-val-winner">{{ "%.1f"|format(w_pct) }}%</span>
+                                </div>
+                                <div class="stat-bar-track">
+                                    <div class="stat-bar-fill fill-gold stat-bar-winner" style="width: {{ w_pct }}%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Favorite Stat -->
+                            <div class="stat-row">
+                                <div class="stat-labels">
+                                    <span class="stat-name highlight-green">💚 Favorim</span>
+                                    <span class="stat-val stat-val-fav">{{ "%.1f"|format(f_pct) }}%</span>
+                                </div>
+                                <div class="stat-bar-track">
+                                    <div class="stat-bar-fill fill-green stat-bar-fav" style="width: {{ f_pct }}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dual Action Buttons -->
+                        <div class="nominee-actions">
+                            <button
+                                type="button"
+                                class="btn-grammy-pick btn-pick-winner {% if is_my_winner %}is-selected{% endif %}"
+                                data-action="winner"
+                                title="Bu yapımın kazanacağını tahmin et"
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <circle cx="12" cy="8" r="6"></circle>
+                                    <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path>
+                                </svg>
+                                <span class="btn-text">{% if is_my_winner %}Tahminin{% else %}Kazanır{% endif %}</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn-grammy-pick btn-pick-fav {% if is_my_fav %}is-selected{% endif %}"
+                                data-action="favorite"
+                                title="Bu yapımın kazanmasını istediğini belirt"
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                                <span class="btn-text">{% if is_my_fav %}Favorin{% else %}Favorim{% endif %}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Category Filter Tabs
+    const tabButtons = document.querySelectorAll(".grammy-tab-btn");
+    const categoryCards = document.querySelectorAll(".grammy-category-card");
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            tabButtons.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            const filter = btn.dataset.filter;
+
+            categoryCards.forEach(card => {
+                if (filter === "all" || card.dataset.field === filter) {
+                    card.style.display = "";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        });
+    });
+
+    // 2. Interactive Predictions & Favorites AJAX Handler
+    document.querySelectorAll(".btn-grammy-pick").forEach(btn => {
+        btn.addEventListener("click", async function(e) {
+            e.preventDefault();
+            const nomineeCard = this.closest(".nominee-card");
+            if (!nomineeCard) return;
+
+            const categoryId = nomineeCard.dataset.categoryId;
+            const nomineeId = nomineeCard.dataset.nomineeId;
+            const pickType = this.dataset.action; // 'winner' or 'favorite'
+
+            // Tactile scale feedback
+            this.style.transform = "scale(0.94)";
+            setTimeout(() => { this.style.transform = ""; }, 150);
+
+            try {
+                const resp = await fetch("/api/grammy/predict", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        category_id: categoryId,
+                        pick_type: pickType,
+                        nominee_id: nomineeId
+                    })
+                });
+
+                if (resp.status === 401) {
+                    // Auth required
+                    window.location.href = "/auth?mode=login&next=" + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+
+                const res = await resp.json();
+                if (!res.ok) {
+                    alert(res.error || "İşlem sırasında bir hata oluştu.");
+                    return;
+                }
+
+                // Update UI in this category
+                updateCategoryUI(categoryId, res.user_picks, res.stats);
+            } catch (err) {
+                console.error("Grammy pick error:", err);
+            }
+        });
+    });
+
+    function updateCategoryUI(categoryId, userPicks, stats) {
+        const catCard = document.getElementById("cat-" + categoryId);
+        if (!catCard) return;
+
+        const myWinner = userPicks ? userPicks.winner : "";
+        const myFav = userPicks ? userPicks.favorite : "";
+        const winnerPcts = (stats && stats.winner_percentages) ? stats.winner_percentages : {};
+        const favPcts = (stats && stats.favorite_percentages) ? stats.favorite_percentages : {};
+
+        // Update vote totals
+        const winCountLabel = catCard.querySelector(".winner-count-label");
+        if (winCountLabel && stats) winCountLabel.textContent = stats.total_winner_votes || 0;
+        const favCountLabel = catCard.querySelector(".fav-count-label");
+        if (favCountLabel && stats) favCountLabel.textContent = stats.total_favorite_votes || 0;
+
+        // Iterate over nominee cards in this category
+        catCard.querySelectorAll(".nominee-card").forEach(card => {
+            const nid = card.dataset.nomineeId;
+            const isWinner = (myWinner === nid);
+            const isFav = (myFav === nid);
+
+            // Toggle card highlight classes
+            card.classList.toggle("picked-winner", isWinner);
+            card.classList.toggle("picked-fav", isFav);
+
+            // Active badges
+            const trophyBadge = card.querySelector(".badge-trophy");
+            if (trophyBadge) trophyBadge.classList.toggle("hidden", !isWinner);
+            const heartBadge = card.querySelector(".badge-heart");
+            if (heartBadge) heartBadge.classList.toggle("hidden", !isFav);
+
+            // Winner button
+            const winBtn = card.querySelector(".btn-pick-winner");
+            if (winBtn) {
+                winBtn.classList.toggle("is-selected", isWinner);
+                const txt = winBtn.querySelector(".btn-text");
+                if (txt) txt.textContent = isWinner ? "Tahminin" : "Kazanır";
+            }
+
+            // Favorite button
+            const favBtn = card.querySelector(".btn-pick-fav");
+            if (favBtn) {
+                favBtn.classList.toggle("is-selected", isFav);
+                const txt = favBtn.querySelector(".btn-text");
+                if (txt) txt.textContent = isFav ? "Favorin" : "Favorim";
+            }
+
+            // Update winner stats
+            const wPct = winnerPcts[nid] !== undefined ? winnerPcts[nid] : 0.0;
+            const wLabel = card.querySelector(".stat-val-winner");
+            const wBar = card.querySelector(".stat-bar-winner");
+            if (wLabel) wLabel.textContent = wPct.toFixed(1) + "%";
+            if (wBar) wBar.style.width = wPct + "%";
+
+            // Update fav stats
+            const fPct = favPcts[nid] !== undefined ? favPcts[nid] : 0.0;
+            const fLabel = card.querySelector(".stat-val-fav");
+            const fBar = card.querySelector(".stat-bar-fav");
+            if (fLabel) fLabel.textContent = fPct.toFixed(1) + "%";
+            if (fBar) fBar.style.width = fPct + "%";
+        });
+    }
+});
+</script>
+{% endblock %}

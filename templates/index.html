@@ -302,37 +302,39 @@
                 <a href="{{ url_for('leaderboard') }}" class="btn btn-ghost btn-sm">Tümünü Gör</a>
             </div>
 
-            <div class="top-list">
-                {% for item in top_releases %}
-                    <a href="{{ url_for('release_detail', release_id=item.release_id) }}" class="top-list-row">
-                        <span class="rank-num">#{{ loop.index }}</span>
-                        <img src="{{ item.artwork_url }}" alt="{{ item.title }}" class="top-row-cover" />
-                        <div class="top-row-info">
-                            <div class="top-row-title">
-                                <span>{{ item.title }}</span>
-                                <span class="mini-type">{{ 'SINGLE' if item.release_type == 'single' else 'ALBÜM' }}</span>
+            <div class="home-scroll-list">
+                <div class="top-list">
+                    {% for item in top_releases %}
+                        <a href="{{ url_for('release_detail', release_id=item.release_id) }}" class="top-list-row">
+                            <span class="rank-num">#{{ loop.index }}</span>
+                            <img src="{{ item.artwork_url }}" alt="{{ item.title }}" class="top-row-cover" loading="lazy" />
+                            <div class="top-row-info">
+                                <div class="top-row-title">
+                                    <span>{{ item.title }}</span>
+                                    <span class="mini-type">{{ 'SINGLE' if item.release_type == 'single' else 'ALBÜM' }}</span>
+                                </div>
+                                <div class="top-row-artist">{{ item.artist }} • {{ item.year }}</div>
+                                <div class="top-row-mini-bars">
+                                    <span title="Prodüksiyon">P: {{ item.avg_production }}</span>
+                                    <span title="Sözler">S: {{ item.avg_lyrics }}</span>
+                                    <span title="Melodi">M: {{ item.avg_melody }}</span>
+                                    <span title="Vokal">V: {{ item.avg_vocals }}</span>
+                                    <span title="Tekrar">T: {{ item.avg_replay }}</span>
+                                </div>
                             </div>
-                            <div class="top-row-artist">{{ item.artist }} • {{ item.year }}</div>
-                            <div class="top-row-mini-bars">
-                                <span title="Prodüksiyon">P: {{ item.avg_production }}</span>
-                                <span title="Sözler">S: {{ item.avg_lyrics }}</span>
-                                <span title="Melodi">M: {{ item.avg_melody }}</span>
-                                <span title="Vokal">V: {{ item.avg_vocals }}</span>
-                                <span title="Tekrar">T: {{ item.avg_replay }}</span>
+                            <div class="top-row-score">
+                                <div class="big-score-pill {% if item.avg_score >= 8.5 %}score-high{% elif item.avg_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                    {{ "%.2f"|format(item.avg_score) }}
+                                </div>
+                                <small>{{ item.rating_count }} oy</small>
                             </div>
+                        </a>
+                    {% else %}
+                        <div class="empty-inline">
+                            <p class="muted-text">Henüz puanlanan yapım yok. Katalogdan bir albüm arayıp ilk puanı sen ver!</p>
                         </div>
-                        <div class="top-row-score">
-                            <div class="big-score-pill {% if item.avg_score >= 8.5 %}score-high{% elif item.avg_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
-                                {{ "%.2f"|format(item.avg_score) }}
-                            </div>
-                            <small>{{ item.rating_count }} oy</small>
-                        </div>
-                    </a>
-                {% else %}
-                    <div class="empty-inline">
-                        <p class="muted-text">Henüz puanlanan yapım yok. Katalogdan bir albüm arayıp ilk puanı sen ver!</p>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
         </section>
 
@@ -352,40 +354,42 @@
                 </div>
             </div>
 
-            <div class="feed-list">
-                {% for rev in recent_reviews %}
-                    <div class="feed-card">
-                        <div class="feed-card-top">
-                            <a href="{{ url_for('release_detail', release_id=rev.release_id) }}" class="feed-release-link">
-                                <img src="{{ rev.artwork_url }}" alt="{{ rev.release_title }}" class="feed-cover" />
-                                <div>
-                                    <h4>{{ rev.release_title }}</h4>
-                                    <p>{{ rev.artist_name }} <span class="mini-type">{{ 'SINGLE' if rev.release_type == 'single' else 'ALBÜM' }}</span></p>
+            <div class="home-scroll-list">
+                <div class="feed-list">
+                    {% for rev in recent_reviews %}
+                        <div class="feed-card">
+                            <div class="feed-card-top">
+                                <a href="{{ url_for('release_detail', release_id=rev.release_id) }}" class="feed-release-link">
+                                    <img src="{{ rev.artwork_url }}" alt="{{ rev.release_title }}" class="feed-cover" loading="lazy" />
+                                    <div>
+                                        <h4>{{ rev.release_title }}</h4>
+                                        <p>{{ rev.artist_name }} <span class="mini-type">{{ 'SINGLE' if rev.release_type == 'single' else 'ALBÜM' }}</span></p>
+                                    </div>
+                                </a>
+                                <div class="feed-score-box">
+                                    <span class="big-score-pill {% if rev.overall_score|float >= 8.5 %}score-high{% elif rev.overall_score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                        {{ "%.1f"|format(rev.overall_score|float) }}/10
+                                    </span>
+                                    <a href="{{ url_for('profile', username=rev.username) }}" class="feed-user">@{{ rev.username }}</a>
                                 </div>
-                            </a>
-                            <div class="feed-score-box">
-                                <span class="big-score-pill {% if rev.overall_score|float >= 8.5 %}score-high{% elif rev.overall_score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
-                                    {{ "%.1f"|format(rev.overall_score|float) }}/10
-                                </span>
-                                <a href="{{ url_for('profile', username=rev.username) }}" class="feed-user">@{{ rev.username }}</a>
                             </div>
+                            <div class="feed-criteria-chips">
+                                <span>Prodüksiyon: <b>{{ rev.score_production }}</b></span>
+                                <span>Sözler: <b>{{ rev.score_lyrics }}</b></span>
+                                <span>Melodi: <b>{{ rev.score_melody }}</b></span>
+                                <span>Vokal: <b>{{ rev.score_vocals }}</b></span>
+                                <span>Tekrar: <b>{{ rev.score_replay }}</b></span>
+                            </div>
+                            {% if rev.review_text %}
+                                <p class="feed-review-text">"{{ rev.review_text }}"</p>
+                            {% endif %}
                         </div>
-                        <div class="feed-criteria-chips">
-                            <span>Prodüksiyon: <b>{{ rev.score_production }}</b></span>
-                            <span>Sözler: <b>{{ rev.score_lyrics }}</b></span>
-                            <span>Melodi: <b>{{ rev.score_melody }}</b></span>
-                            <span>Vokal: <b>{{ rev.score_vocals }}</b></span>
-                            <span>Tekrar: <b>{{ rev.score_replay }}</b></span>
+                    {% else %}
+                        <div class="empty-inline">
+                            <p class="muted-text">Henüz değerlendirme yapılmamış.</p>
                         </div>
-                        {% if rev.review_text %}
-                            <p class="feed-review-text">"{{ rev.review_text }}"</p>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div class="empty-inline">
-                        <p class="muted-text">Henüz değerlendirme yapılmamış.</p>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
         </section>
     </div>

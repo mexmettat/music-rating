@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     bio TEXT DEFAULT '',
-    avatar_color TEXT DEFAULT '#8b5cf6',
+    avatar_color TEXT DEFAULT '#141316ff',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -77,3 +77,23 @@ CREATE POLICY "Public full access release_ratings" ON public.release_ratings FOR
 
 DROP POLICY IF EXISTS "Public full access track_ratings" ON public.track_ratings;
 CREATE POLICY "Public full access track_ratings" ON public.track_ratings FOR ALL USING (true) WITH CHECK (true);
+-- ============================================================================
+-- GRAMMY TAHMİN & FAVORİ TABLOSU
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.grammy_predictions (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    username TEXT NOT NULL,
+    category_id TEXT NOT NULL,
+    winner_pick TEXT DEFAULT '',   -- 'Kim Kazanır?' (Tahmin)
+    favorite_pick TEXT DEFAULT '', -- 'Kimin Kazanmasını İstersin?' (Gönülden Favorin)
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, category_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_grammy_predictions_cat ON public.grammy_predictions(category_id);
+CREATE INDEX IF NOT EXISTS idx_grammy_predictions_user ON public.grammy_predictions(user_id);
+
+ALTER TABLE public.grammy_predictions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public full access grammy_predictions" ON public.grammy_predictions;
+CREATE POLICY "Public full access grammy_predictions" ON public.grammy_predictions FOR ALL USING (true) WITH CHECK (true);

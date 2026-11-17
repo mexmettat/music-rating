@@ -29,7 +29,10 @@ from services.db import (
     get_top_rated_releases,
     get_bulk_release_stats,
     get_user_profile_stats,
+    upsert_grammy_prediction,
+    get_all_grammy_data,
 )
+from services.grammy_data import GRAMMY_CATEGORIES
 
 load_dotenv(override=True)
 
@@ -352,6 +355,55 @@ def profile(username: str):
         flash("Kullanıcı bulunamadı.", "error")
         return redirect(url_for("index"))
     return render_template("profile.html", profile=pdata)
+
+
+@app.route("/grammy")
+def grammy_hub():
+    current_user = session.get("user")
+    uid = current_user["id"] if current_user else None
+    grammy_data = get_all_grammy_data(uid)
+    return render_template(
+        "grammy.html",
+        categories=GRAMMY_CATEGORIES,
+        user_picks=grammy_data.get("user_picks", {}),
+        stats=grammy_data.get("stats", {}),
+    )
+
+
+@app.route("/api/grammy/predict", methods=["POST"])
+@login_required_json
+def api_grammy_predict():
+    current_user = session.get("user")
+    data = request.get_json(silent=True) or {}
+    category_id = (data.get("category_id") or "").strip()
+    pick_type = (data.get("pick_type") or "").strip()
+    nominee_id = (data.get("nominee_id") or "").strip()
+
+    if not category_id or pick_type not in ("winner", "favorite") or not nominee_id:
+        return jsonify({"ok": False, "error": "Geçersiz kategori veya seçim parametresi."}), 400
+
+    winner_pick = nominee_id if pick_type == "winner" else None
+    favorite_pick = nominee_id if pick_type == "favorite" else None
+
+    upsert_grammy_prediction(
+        user_id=current_user["id"],
+        username=current_user["username"],
+        category_id=category_id,
+        winner_pick=winner_pick,
+        favorite_pick=favorite_pick,
+    )
+
+    g_data = get_all_grammy_data(current_user["id"])
+    cat_stats = g_data.get("stats", {}).get(category_id, {})
+    user_cat_picks = g_data.get("user_picks", {}).get(category_id, {})
+
+    return jsonify({
+        "ok": True,
+        "category_id": category_id,
+        "pick_type": pick_type,
+        "user_picks": user_cat_picks,
+        "stats": cat_stats,
+    })
 
 
 if __name__ == "__main__":

@@ -101,6 +101,17 @@ def init_sqlite_db() -> None:
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(user_id, track_id)
         );
+
+        CREATE TABLE IF NOT EXISTS grammy_predictions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            username TEXT NOT NULL,
+            category_id TEXT NOT NULL,
+            winner_pick TEXT DEFAULT '',
+            favorite_pick TEXT DEFAULT '',
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, category_id)
+        );
         """
     )
     conn.commit()
@@ -829,6 +840,7 @@ def get_user_profile_stats(username: str) -> Optional[Dict[str, Any]]:
     uid = user["id"]
     rel_rows: List[Dict[str, Any]] = []
     trk_rows: List[Dict[str, Any]] = []
+    grammy_rows: List[Dict[str, Any]] = []
 
     if _use_supabase():
         cfg = _get_supabase_config()
@@ -846,6 +858,13 @@ def get_user_profile_stats(username: str) -> Optional[Dict[str, Any]]:
         )
         if r2.status_code == 200:
             trk_rows = r2.json()
+        r3 = requests.get(
+            f"{cfg['url']}/rest/v1/grammy_predictions?user_id=eq.{uid}&order=updated_at.desc",
+            headers=_supabase_headers(cfg["key"]),
+            timeout=5,
+        )
+        if r3.status_code == 200:
+            grammy_rows = r3.json()
     else:
         conn = _get_sqlite_conn()
         try:
@@ -854,6 +873,8 @@ def get_user_profile_stats(username: str) -> Optional[Dict[str, Any]]:
             rel_rows = [dict(r) for r in cur.fetchall()]
             cur.execute("SELECT * FROM track_ratings WHERE user_id = ? ORDER BY updated_at DESC", (uid,))
             trk_rows = [dict(r) for r in cur.fetchall()]
+            cur.execute("SELECT * FROM grammy_predictions WHERE user_id = ? ORDER BY updated_at DESC", (uid,))
+            grammy_rows = [dict(r) for r in cur.fetchall()]
         finally:
             conn.close()
 
@@ -869,6 +890,31 @@ def get_user_profile_stats(username: str) -> Optional[Dict[str, Any]]:
         "replay": round(sum(float(r["score_replay"]) for r in rel_rows) / rel_count, 1) if rel_count else 0.0,
     }
 
+    # Enrich Grammy picks
+    from services.grammy_data import GRAMMY_CATEGORIES
+    nominee_map = {
+        nom["id"]: nom
+        for cat in GRAMMY_CATEGORIES
+        for nom in cat.get("nominees", [])
+    }
+    category_map = {cat["id"]: cat for cat in GRAMMY_CATEGORIES}
+
+    grammy_picks = []
+    for grow in grammy_rows:
+        cid = grow.get("category_id")
+        w_id = grow.get("winner_pick")
+        f_id = grow.get("favorite_pick")
+        cat = category_map.get(cid)
+        if cat and (w_id or f_id):
+            grammy_picks.append({
+                "category_id": cid,
+                "category_title": cat["title"],
+                "field_badge": cat["field_badge"],
+                "winner": nominee_map.get(w_id),
+                "favorite": nominee_map.get(f_id),
+                "updated_at": grow.get("updated_at", ""),
+            })
+
     return {
         "user": user,
         "release_ratings": rel_rows,
@@ -877,6 +923,7 @@ def get_user_profile_stats(username: str) -> Optional[Dict[str, Any]]:
         "track_count": trk_count,
         "avg_given": avg_given,
         "criteria_avgs": criteria_avgs,
+        "grammy_picks": grammy_picks,
     }
 
 
@@ -949,3 +996,183 @@ def seed_initial_demo_data() -> None:
 
 
 seed_initial_demo_data()
+
+
+# ---------------------------------------------------------------------------
+# Grammy 2025 Predictions & Favorites
+# ---------------------------------------------------------------------------
+
+def upsert_grammy_prediction(
+    user_id: int,
+    username: str,
+    category_id: str,
+    winner_pick: Optional[str] = None,
+    favorite_pick: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Saves or updates a user's prediction (who will win) and/or favorite (who they want to win).
+    Supports Supabase with SQLite fallback.
+    """
+    cfg = _get_supabase_config()
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    # 1. Supabase Cloud attempt
+    if cfg["url"] and cfg["key"]:
+        try:
+            lookup_url = (
+                f"{cfg['url']}/rest/v1/grammy_predictions"
+                f"?user_id=eq.{user_id}&category_id=eq.{category_id}&select=*"
+            )
+            l_resp = requests.get(lookup_url, headers=_supabase_headers(cfg["key"]), timeout=4)
+            existing = l_resp.json()[0] if l_resp.status_code == 200 and l_resp.json() else {}
+
+            payload = {
+                "user_id": user_id,
+                "username": username,
+                "category_id": category_id,
+                "winner_pick": winner_pick if winner_pick is not None else existing.get("winner_pick", ""),
+                "favorite_pick": favorite_pick if favorite_pick is not None else existing.get("favorite_pick", ""),
+                "updated_at": now_iso,
+            }
+
+            resp = requests.post(
+                f"{cfg['url']}/rest/v1/grammy_predictions?on_conflict=user_id,category_id",
+                headers=_supabase_headers(cfg["key"], prefer="resolution=merge-duplicates,return=representation"),
+                json=payload,
+                timeout=5,
+            )
+            if resp.status_code in (200, 201):
+                return resp.json()[0] if resp.json() else payload
+        except Exception as e:
+            print(f"[db:supabase] upsert_grammy_prediction error, falling back to sqlite: {e}")
+
+    # 2. SQLite Fallback
+    conn = _get_sqlite_conn()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            "SELECT * FROM grammy_predictions WHERE user_id = ? AND category_id = ?",
+            (user_id, category_id),
+        )
+        row = cur.fetchone()
+
+        w_val = winner_pick if winner_pick is not None else (row["winner_pick"] if row else "")
+        f_val = favorite_pick if favorite_pick is not None else (row["favorite_pick"] if row else "")
+
+        if row:
+            cur.execute(
+                """
+                UPDATE grammy_predictions
+                SET winner_pick = ?, favorite_pick = ?, username = ?, updated_at = ?
+                WHERE user_id = ? AND category_id = ?
+                """,
+                (w_val, f_val, username, now_iso, user_id, category_id),
+            )
+        else:
+            cur.execute(
+                """
+                INSERT INTO grammy_predictions (user_id, username, category_id, winner_pick, favorite_pick, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (user_id, username, category_id, w_val, f_val, now_iso),
+            )
+        conn.commit()
+        return {
+            "user_id": user_id,
+            "username": username,
+            "category_id": category_id,
+            "winner_pick": w_val,
+            "favorite_pick": f_val,
+            "updated_at": now_iso,
+        }
+    except Exception as e:
+        print(f"[db:sqlite] upsert_grammy_prediction error: {e}")
+        return {}
+    finally:
+        conn.close()
+
+
+def get_all_grammy_data(user_id: Optional[int] = None) -> Dict[str, Any]:
+    """
+    Returns aggregation stats for all Grammy categories and the current user's picks.
+    """
+    cfg = _get_supabase_config()
+    all_rows = []
+
+    # 1. Supabase Cloud attempt
+    if cfg["url"] and cfg["key"]:
+        try:
+            resp = requests.get(
+                f"{cfg['url']}/rest/v1/grammy_predictions?select=*",
+                headers=_supabase_headers(cfg["key"]),
+                timeout=5,
+            )
+            if resp.status_code == 200:
+                all_rows = resp.json()
+        except Exception as e:
+            print(f"[db:supabase] get_all_grammy_data error: {e}")
+
+    # Fallback or local SQLite if empty / failed
+    if not all_rows:
+        try:
+            conn = _get_sqlite_conn()
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM grammy_predictions")
+            all_rows = [dict(r) for r in cur.fetchall()]
+            conn.close()
+        except Exception as e:
+            print(f"[db:sqlite] get_all_grammy_data error: {e}")
+
+    user_picks: Dict[str, Dict[str, str]] = {}
+    stats: Dict[str, Dict[str, Any]] = {}
+
+    for row in all_rows:
+        cid = row.get("category_id")
+        if not cid:
+            continue
+
+        if cid not in stats:
+            stats[cid] = {
+                "total_winner_votes": 0,
+                "total_favorite_votes": 0,
+                "winner_counts": {},
+                "favorite_counts": {},
+                "winner_percentages": {},
+                "favorite_percentages": {},
+            }
+
+        w = row.get("winner_pick") or ""
+        f = row.get("favorite_pick") or ""
+        uid = row.get("user_id")
+
+        if user_id and uid == user_id:
+            user_picks[cid] = {
+                "winner": w,
+                "favorite": f,
+            }
+
+        if w:
+            stats[cid]["total_winner_votes"] += 1
+            stats[cid]["winner_counts"][w] = stats[cid]["winner_counts"].get(w, 0) + 1
+
+        if f:
+            stats[cid]["total_favorite_votes"] += 1
+            stats[cid]["favorite_counts"][f] = stats[cid]["favorite_counts"].get(f, 0) + 1
+
+    # Calculate percentages
+    for cid, cdata in stats.items():
+        tot_w = cdata["total_winner_votes"]
+        if tot_w > 0:
+            for nid, count in cdata["winner_counts"].items():
+                cdata["winner_percentages"][nid] = round((count / tot_w) * 100, 1)
+
+        tot_f = cdata["total_favorite_votes"]
+        if tot_f > 0:
+            for nid, count in cdata["favorite_counts"].items():
+                cdata["favorite_percentages"][nid] = round((count / tot_f) * 100, 1)
+
+    return {
+        "user_picks": user_picks,
+        "stats": stats,
+    }
+

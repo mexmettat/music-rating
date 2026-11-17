@@ -29,28 +29,29 @@
         <div class="top-list">
             {% for item in top_releases %}
             <a href="{{ url_for('release_detail', release_id=item.release_id) }}" class="top-list-row leaderboard-row">
-                <span class="rank-num">#{{ loop.index }}</span>
-                <img src="{{ item.artwork_url }}" alt="{{ item.title }}" class="top-row-cover" />
-                <div class="top-row-info">
-                    <div class="top-row-title">
-                        <span>{{ item.title }}</span>
-                        <span class="mini-type">{{ 'SINGLE' if item.release_type == 'single' else 'ALBÜM' }}</span>
+                <div class="leaderboard-main-row">
+                    <span class="rank-num {% if loop.index == 1 %}rank-gold{% elif loop.index == 2 %}rank-silver{% elif loop.index == 3 %}rank-bronze{% endif %}">#{{ loop.index }}</span>
+                    <img src="{{ item.artwork_url }}" alt="{{ item.title }}" class="top-row-cover" loading="lazy" />
+                    <div class="top-row-info">
+                        <div class="top-row-title">
+                            <span class="title-text" title="{{ item.title }}">{{ item.title }}</span>
+                            <span class="mini-type">{{ 'SINGLE' if item.release_type == 'single' else 'ALBÜM' }}</span>
+                        </div>
+                        <div class="top-row-artist" title="{{ item.artist }}">{{ item.artist }} • {{ item.year }} • {{ item.genre }}</div>
                     </div>
-                    <div class="top-row-artist">{{ item.artist }} • {{ item.year }} • {{ item.genre }}</div>
-                    <div class="top-row-mini-bars">
-                        <span>Prodüksiyon: <b>{{ item.avg_production }}</b></span>
-                        <span>Sözler: <b>{{ item.avg_lyrics }}</b></span>
-                        <span>Melodi: <b>{{ item.avg_melody }}</b></span>
-                        <span>Vokal: <b>{{ item.avg_vocals }}</b></span>
-                        <span>Tekrar: <b>{{ item.avg_replay }}</b></span>
+                    <div class="top-row-score">
+                        <div class="big-score-pill {% if item.avg_score >= 8.5 %}score-high{% elif item.avg_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                            {{ "%.2f"|format(item.avg_score) }} / 10
+                        </div>
+                        <small>{{ item.rating_count }} oy</small>
                     </div>
                 </div>
-                <div class="top-row-score">
-                    <div
-                        class="big-score-pill {% if item.avg_score >= 8.5 %}score-high{% elif item.avg_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
-                        {{ "%.2f"|format(item.avg_score) }} / 10
-                    </div>
-                    <small>{{ item.rating_count }} değerlendirme</small>
+                <div class="leaderboard-criteria-strip">
+                    <span class="crit-pill"><span>Prod</span><b>{{ item.avg_production }}</b></span>
+                    <span class="crit-pill"><span>Söz</span><b>{{ item.avg_lyrics }}</b></span>
+                    <span class="crit-pill"><span>Melodi</span><b>{{ item.avg_melody }}</b></span>
+                    <span class="crit-pill"><span>Vokal</span><b>{{ item.avg_vocals }}</b></span>
+                    <span class="crit-pill"><span>Tekrar</span><b>{{ item.avg_replay }}</b></span>
                 </div>
             </a>
             {% else %}

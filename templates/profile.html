@@ -24,12 +24,110 @@
                 <strong>{{ profile.track_count }}</strong>
                 <span>Tekil Şarkı (1-10 Puan)</span>
             </div>
+            {% if profile.grammy_picks %}
+            <div class="p-stat-box stat-box-gold">
+                <strong>{{ profile.grammy_picks|length }}/7</strong>
+                <span>Grammy Tercihi</span>
+            </div>
+            {% endif %}
             <div class="p-stat-box highlight">
                 <strong>{{ "%.2f"|format(profile.avg_given) if profile.release_count else "—" }}</strong>
                 <span>Genel Puan Ortalaması</span>
             </div>
         </div>
     </section>
+
+    <!-- User's Grammy 2027 Predictions & Favorites -->
+    {% if profile.grammy_picks %}
+        <section class="glass-panel profile-grammy-panel mb-xl">
+            <div class="panel-header">
+                <div class="panel-title-with-icon">
+                    <span class="svg-icon-box icon-gold" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="8" r="6"></circle>
+                            <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path>
+                        </svg>
+                    </span>
+                    <div>
+                        <span class="badge badge-grammy">69. GRAMMY ÖDÜLLERİ</span>
+                        <h2 class="panel-title">@{{ profile.user.username }}'in Grammy Tercihleri ({{ profile.grammy_picks|length }}/7)</h2>
+                        <p class="panel-subtitle">Kategorilerdeki resmi 'Kazanır' tahminleri ve 'Favorim' seçimleri</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('grammy_hub') }}" class="btn btn-ghost btn-sm">
+                    <span>Arenaya Git</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                </a>
+            </div>
+
+            <div class="profile-grammy-grid">
+                {% for pick in profile.grammy_picks %}
+                    <div class="profile-grammy-card">
+                        <div class="p-grammy-card-header">
+                            <span class="badge {% if pick.field_badge == 'Big Four' %}badge-gold{% else %}badge-purple{% endif %}">{{ pick.field_badge }}</span>
+                            <h3 class="p-grammy-cat-title">{{ pick.category_title }}</h3>
+                        </div>
+
+                        <div class="p-grammy-picks-wrap">
+                            <!-- Winner Pick -->
+                            <div class="p-pick-row winner-pick-row">
+                                <span class="p-pick-badge badge-winner">🏆 Kazanır</span>
+                                {% if pick.winner %}
+                                    <div class="p-pick-entity">
+                                        <img src="{{ pick.winner.artwork }}" alt="{{ pick.winner.title }}" class="p-pick-thumb" loading="lazy" />
+                                        <div class="p-pick-info">
+                                            <strong class="p-pick-title" title="{{ pick.winner.title }}">{{ pick.winner.title }}</strong>
+                                            <span class="p-pick-artist" title="{{ pick.winner.artist }}">{{ pick.winner.artist }}</span>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="p-pick-none">Belirtilmedi</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Favorite Pick -->
+                            <div class="p-pick-row fav-pick-row">
+                                <span class="p-pick-badge badge-fav">💚 Favorim</span>
+                                {% if pick.favorite %}
+                                    <div class="p-pick-entity">
+                                        <img src="{{ pick.favorite.artwork }}" alt="{{ pick.favorite.title }}" class="p-pick-thumb" loading="lazy" />
+                                        <div class="p-pick-info">
+                                            <strong class="p-pick-title" title="{{ pick.favorite.title }}">{{ pick.favorite.title }}</strong>
+                                            <span class="p-pick-artist" title="{{ pick.favorite.artist }}">{{ pick.favorite.artist }}</span>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="p-pick-none">Belirtilmedi</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% elif current_user and current_user.username == profile.user.username %}
+        <section class="glass-panel profile-grammy-panel mb-xl">
+            <div class="panel-header">
+                <div class="panel-title-with-icon">
+                    <span class="svg-icon-box icon-gold" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="8" r="6"></circle>
+                            <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path>
+                        </svg>
+                    </span>
+                    <div>
+                        <span class="badge badge-grammy">69. GRAMMY ÖDÜLLERİ</span>
+                        <h2 class="panel-title">Grammy Tahminlerini Yap</h2>
+                        <p class="panel-subtitle">Henüz hiçbir kategori için tercih belirlemedin. Kimin kazanacağını tahmin et ve favorilerini seç!</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('grammy_hub') }}" class="btn btn-primary btn-sm">
+                    <span>Tahmin Yap</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                </a>
+            </div>
+        </section>
+    {% endif %}
 
     <!-- User's 5-Criteria Tendency Breakdown -->
     {% if profile.release_count > 0 %}
@@ -74,35 +172,37 @@
                     </div>
                 </div>
             </div>
-            <div class="feed-list">
-                {% for r in profile.release_ratings %}
-                    <div class="feed-card">
-                        <div class="feed-card-top">
-                            <a href="{{ url_for('release_detail', release_id=r.release_id) }}" class="feed-release-link">
-                                <img src="{{ r.artwork_url }}" alt="{{ r.release_title }}" class="feed-cover" />
-                                <div>
-                                    <h4>{{ r.release_title }}</h4>
-                                    <p>{{ r.artist_name }} <span class="mini-type">{{ 'SINGLE' if r.release_type == 'single' else 'ALBÜM' }}</span></p>
-                                </div>
-                            </a>
-                            <span class="big-score-pill {% if r.overall_score|float >= 8.5 %}score-high{% elif r.overall_score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
-                                {{ "%.2f"|format(r.overall_score|float) }}/10
-                            </span>
+            <div class="profile-scroll-list">
+                <div class="feed-list">
+                    {% for r in profile.release_ratings %}
+                        <div class="feed-card">
+                            <div class="feed-card-top">
+                                <a href="{{ url_for('release_detail', release_id=r.release_id) }}" class="feed-release-link">
+                                    <img src="{{ r.artwork_url }}" alt="{{ r.release_title }}" class="feed-cover" />
+                                    <div>
+                                        <h4>{{ r.release_title }}</h4>
+                                        <p>{{ r.artist_name }} <span class="mini-type">{{ 'SINGLE' if r.release_type == 'single' else 'ALBÜM' }}</span></p>
+                                    </div>
+                                </a>
+                                <span class="big-score-pill {% if r.overall_score|float >= 8.5 %}score-high{% elif r.overall_score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                    {{ "%.2f"|format(r.overall_score|float) }}/10
+                                </span>
+                            </div>
+                            <div class="feed-criteria-chips">
+                                <span>Prod: <b>{{ r.score_production }}</b></span>
+                                <span>Söz: <b>{{ r.score_lyrics }}</b></span>
+                                <span>Melodi: <b>{{ r.score_melody }}</b></span>
+                                <span>Vokal: <b>{{ r.score_vocals }}</b></span>
+                                <span>Tekrar: <b>{{ r.score_replay }}</b></span>
+                            </div>
+                            {% if r.review_text %}
+                                <p class="feed-review-text">"{{ r.review_text }}"</p>
+                            {% endif %}
                         </div>
-                        <div class="feed-criteria-chips">
-                            <span>Prod: <b>{{ r.score_production }}</b></span>
-                            <span>Söz: <b>{{ r.score_lyrics }}</b></span>
-                            <span>Melodi: <b>{{ r.score_melody }}</b></span>
-                            <span>Vokal: <b>{{ r.score_vocals }}</b></span>
-                            <span>Tekrar: <b>{{ r.score_replay }}</b></span>
-                        </div>
-                        {% if r.review_text %}
-                            <p class="feed-review-text">"{{ r.review_text }}"</p>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <p class="muted-text">Henüz 5 kriterli albüm veya single puanı verilmemiş.</p>
-                {% endfor %}
+                    {% else %}
+                        <p class="muted-text">Henüz 5 kriterli albüm veya single puanı verilmemiş.</p>
+                    {% endfor %}
+                </div>
             </div>
         </section>
 
@@ -123,21 +223,23 @@
                     </div>
                 </div>
             </div>
-            <div class="top-list">
-                {% for t in profile.track_ratings %}
-                    <a href="{{ url_for('release_detail', release_id=t.release_id) }}" class="top-list-row">
-                        <img src="{{ t.artwork_url }}" alt="{{ t.track_title }}" class="top-row-cover" />
-                        <div class="top-row-info">
-                            <div class="top-row-title">{{ t.track_title }}</div>
-                            <div class="top-row-artist">{{ t.artist_name }} • {{ t.release_title }}</div>
-                        </div>
-                        <div class="big-score-pill {% if t.score|float >= 8.5 %}score-high{% elif t.score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
-                            {{ "%.1f"|format(t.score|float) }}/10
-                        </div>
-                    </a>
-                {% else %}
-                    <p class="muted-text">Henüz albüm içinden tekil şarkı puanlanmamış.</p>
-                {% endfor %}
+            <div class="profile-scroll-list">
+                <div class="top-list">
+                    {% for t in profile.track_ratings %}
+                        <a href="{{ url_for('release_detail', release_id=t.release_id) }}" class="top-list-row">
+                            <img src="{{ t.artwork_url }}" alt="{{ t.track_title }}" class="top-row-cover" />
+                            <div class="top-row-info">
+                                <div class="top-row-title">{{ t.track_title }}</div>
+                                <div class="top-row-artist">{{ t.artist_name }} • {{ t.release_title }}</div>
+                            </div>
+                            <div class="big-score-pill {% if t.score|float >= 8.5 %}score-high{% elif t.score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                {{ "%.1f"|format(t.score|float) }}/10
+                            </div>
+                        </a>
+                    {% else %}
+                        <p class="muted-text">Henüz albüm içinden tekil şarkı puanlanmamış.</p>
+                    {% endfor %}
+                </div>
             </div>
         </section>
     </div>

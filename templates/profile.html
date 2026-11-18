@@ -6,7 +6,7 @@
     <!-- User Profile Header -->
     <section class="profile-header glass-panel">
         <div class="profile-identity">
-            <div class="profile-avatar" data-bg="{{ profile.user.avatar_color or '#4338CA' }}">
+            <div class="profile-avatar" data-bg="{{ profile.user.avatar_color or '#E84A27' }}">
                 {{ profile.user.username[0]|upper }}
             </div>
             <div>
@@ -184,7 +184,7 @@
                                         <p>{{ r.artist_name }} <span class="mini-type">{{ 'SINGLE' if r.release_type == 'single' else 'ALBÜM' }}</span></p>
                                     </div>
                                 </a>
-                                <span class="big-score-pill {% if r.overall_score|float >= 8.5 %}score-high{% elif r.overall_score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                <span class="big-score-pill {% if r.overall_score|float >= 7.5 %}score-high{% elif r.overall_score|float >= 5.0 %}score-mid{% else %}score-low{% endif %}">
                                     {{ "%.2f"|format(r.overall_score|float) }}/10
                                 </span>
                             </div>
@@ -232,7 +232,7 @@
                                 <div class="top-row-title">{{ t.track_title }}</div>
                                 <div class="top-row-artist">{{ t.artist_name }} • {{ t.release_title }}</div>
                             </div>
-                            <div class="big-score-pill {% if t.score|float >= 8.5 %}score-high{% elif t.score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                            <div class="big-score-pill {% if t.score|float >= 7.5 %}score-high{% elif t.score|float >= 5.0 %}score-mid{% else %}score-low{% endif %}">
                                 {{ "%.1f"|format(t.score|float) }}/10
                             </div>
                         </a>

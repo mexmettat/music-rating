@@ -302,7 +302,7 @@ def login_post():
         "id": u["id"],
         "username": u["username"],
         "email": u["email"],
-        "avatar_color": u.get("avatar_color", "#8b5cf6"),
+        "avatar_color": u.get("avatar_color", "#E84A27"),
     }
     flash(f"Tekrar hoş geldin, {u['username']}!", "success")
     return redirect(next_url)
@@ -335,7 +335,7 @@ def register_post():
         "id": u["id"],
         "username": u["username"],
         "email": u["email"],
-        "avatar_color": u.get("avatar_color", "#8b5cf6"),
+        "avatar_color": u.get("avatar_color", "#E84A27"),
     }
     flash("Hesabınız başarıyla oluşturuldu! Hemen albüm ve single puanlamaya başlayabilirsiniz.", "success")
     return redirect(url_for("index"))

@@ -179,7 +179,7 @@ def _use_supabase() -> bool:
 # USER AUTHENTICATION FUNCTIONS
 # ============================================================================
 
-AVATAR_COLORS = ["#8b5cf6", "#ec4899", "#06b6d4", "#10b981", "#f59e0b", "#6366f1", "#f43f5e"]
+AVATAR_COLORS = ["#E84A27", "#F59E0B", "#DC2626", "#D97706", "#10B981", "#0D9488", "#E11D48"]
 
 
 def create_user(username: str, email: str, password: str, bio: str = "") -> Dict[str, Any]:

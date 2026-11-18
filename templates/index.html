@@ -1,22 +1,19 @@
 {% extends "base.html" %}
-{% block title %}kitsuratings{% endblock %}
+{% block title %}kitsu.ratings — Müzik Kritik & Arşiv{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Bento Hero Section (Apple Fluid Translucent Material + Tactile Hierarchy) -->
+    <!-- Kitsune Editorial Hero (design-taste-frontend: concise copy, zero repetition, real UI preview) -->
     <section class="hero-bento">
         <div class="hero-main-block">
             <div class="hero-eyebrow">
-                <span class="pulse-dot" aria-hidden="true"></span>
-                <span>MÜZİK KATALOĞU & KRİTİK PLATFORMU</span>
+                <span class="kitsune-crest" aria-hidden="true">狐</span>
+                <span>Müzik Kritik & Katalog Arşivi</span>
             </div>
             <h1 class="hero-title">
-                Müziği Sadece Dinleme,<br/>
-                <span class="gradient-text">10 Üzerinden Kriterlerle Puanla.</span>
+                Albümleri beş katmanda incele.<br/>
+                <span class="hero-runon">Şarkıları tek tek notla.</span>
             </h1>
-            <p class="hero-subtitle">
-                <strong>Albümlerin tamamını</strong> ve <strong>Single'ları</strong> 5 özel kriterle (Prodüksiyon, Sözler, Melodi, Vokal, Tekrar Dinlenebilirlik) analiz et; ya da bir albümün içindeki <strong>şarkılara tek tek doğrudan 10 üzerinden</strong> puan ver.
-            </p>
 
             <!-- Hero Quick Search -->
             <form action="{{ url_for('search') }}" method="GET" class="hero-search-box">
@@ -30,18 +27,18 @@
                         id="heroSearchInput"
                         type="text"
                         name="q"
-                        placeholder="Puanlamak istediğin albüm, single veya sanatçıyı ara..."
+                        placeholder="Albüm, single veya sanatçı ara..."
                         required
                     />
                 </div>
                 <label for="heroSearchType" class="sr-only">Tür Filtresi</label>
                 <select id="heroSearchType" name="type" class="hero-search-select">
-                    <option value="all">Tümü (Albüm + Single)</option>
-                    <option value="album">Sadece Albümler</option>
-                    <option value="single">Sadece Single'lar</option>
+                    <option value="all">Tümü</option>
+                    <option value="album">Albümler</option>
+                    <option value="single">Single'lar</option>
                 </select>
                 <button type="submit" class="btn btn-primary">
-                    <span>Katalogda Ara</span>
+                    <span>Keşfet</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>
@@ -50,69 +47,66 @@
             </form>
 
             <div class="hero-quick-tags">
-                <span class="tag-label">Hızlı Keşfet:</span>
+                <span class="tag-label">Öne çıkanlar:</span>
                 <a href="{{ url_for('search', q='Daft Punk') }}" class="quick-tag">Daft Punk</a>
+                <a href="{{ url_for('search', q='Charli xcx') }}" class="quick-tag">Charli xcx</a>
                 <a href="{{ url_for('search', q='Mor ve Ötesi') }}" class="quick-tag">Mor ve Ötesi</a>
                 <a href="{{ url_for('search', q='The Weeknd') }}" class="quick-tag">The Weeknd</a>
                 <a href="{{ url_for('search', q='Tame Impala') }}" class="quick-tag">Tame Impala</a>
-                <a href="{{ url_for('search', q='Mabel Matiz') }}" class="quick-tag">Mabel Matiz</a>
                 <a href="{{ url_for('search', q='Kendrick Lamar') }}" class="quick-tag">Kendrick Lamar</a>
             </div>
         </div>
 
-        <!-- Bento Right Column: Dual Rule Architecture -->
+        <!-- Right Visual Artifact: Quiet Studio Meter (No wordy paragraphs) -->
         <div class="hero-side-bento">
-            <div class="bento-rule-card bento-indigo">
-                <div class="bento-card-head">
-                    <span class="svg-icon-box icon-green" aria-hidden="true">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                    </span>
-                    <div>
-                        <span class="badge badge-cta">MOD 1 • DERİN ANALİZ</span>
-                        <h3>Albüm Bütünü & Single'lar</h3>
+            <div class="kitsune-meter-card">
+                <div class="km-header">
+                    <span class="km-label">5 Katmanlı Albüm Analizi</span>
+                    <span class="km-score">9.2</span>
+                </div>
+                <div class="km-bars">
+                    <div class="km-bar-row">
+                        <span>Prodüksiyon</span>
+                        <div class="km-track"><div class="km-fill" style="width: 95%"></div></div>
+                        <b>9.5</b>
+                    </div>
+                    <div class="km-bar-row">
+                        <span>Sözler & Tema</span>
+                        <div class="km-track"><div class="km-fill" style="width: 88%"></div></div>
+                        <b>8.8</b>
+                    </div>
+                    <div class="km-bar-row">
+                        <span>Melodi & Beste</span>
+                        <div class="km-track"><div class="km-fill" style="width: 94%"></div></div>
+                        <b>9.4</b>
+                    </div>
+                    <div class="km-bar-row">
+                        <span>Vokal / İcra</span>
+                        <div class="km-track"><div class="km-fill" style="width: 90%"></div></div>
+                        <b>9.0</b>
+                    </div>
+                    <div class="km-bar-row">
+                        <span>Tekrar Gücü</span>
+                        <div class="km-track"><div class="km-fill" style="width: 95%"></div></div>
+                        <b>9.5</b>
                     </div>
                 </div>
-                <p class="bento-desc">5 ayrı kriter 10 üzerinden puanlanır, genel ortalama otomatik hesaplanır:</p>
-                <div class="criteria-mini-pills">
-                    {% for c in criteria_meta %}
-                        <span class="c-pill">{{ c.label }}</span>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="bento-rule-card bento-dark">
-                <div class="bento-card-head">
-                    <span class="svg-icon-box icon-indigo" aria-hidden="true">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 18V5l12-2v13"></path>
-                            <circle cx="6" cy="18" r="3"></circle>
-                            <circle cx="18" cy="16" r="3"></circle>
-                        </svg>
-                    </span>
-                    <div>
-                        <span class="badge badge-indigo">MOD 2 • HIZLI PUAN</span>
-                        <h3>Albüm İçi Tekil Şarkılar</h3>
+                <div class="km-footer">
+                    <span class="km-sub-label">Şarkı Bazlı Hızlı Not</span>
+                    <div class="mini-ten-scale" aria-hidden="true">
+                        <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span class="active">8</span><span class="active">9</span><span class="active">10</span>
                     </div>
-                </div>
-                <p class="bento-desc">Albümdeki diğer şarkılarda 5 kriter istenmez — her şarkıya doğrudan <strong>1 ile 10 arasında</strong> tek tıkla puan verilir.</p>
-                <div class="mini-ten-scale" aria-hidden="true">
-                    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span class="active">8</span><span class="active">9</span><span class="active">10</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Community Rated Releases Section (Apple-Style Segmented Controls & Filters) -->
+    <!-- Community Rated Releases Section -->
     <section class="section-block" id="ratedCatalogSection">
         <div class="rated-toolbar glass-panel">
             <div class="rated-toolbar-top">
-                <div>
-                    <span class="badge badge-cta">TOPLULUK AKIŞI</span>
-                    <h2 class="section-title">Puanlanan Albüm & Single'lar</h2>
-                    <p class="section-desc">Kullanıcıların değerlendirdiği yapımlar — varsayılan olarak en yeni puanlananlar listelenir</p>
+                <div class="editorial-heading-block">
+                    <h2 class="section-title">Puanlanan yapımlar. <span class="muted-runon">Topluluğun son değerlendirmeleri.</span></h2>
                 </div>
 
                 <!-- Sort Segmented Control -->
@@ -208,7 +202,7 @@
                                 {% if item.release_type == 'single' %}SINGLE{% else %}ALBÜM{% endif %}
                             </span>
 
-                            <span class="score-badge {% if item.avg_score >= 8.5 %}score-high{% elif item.avg_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                            <span class="score-badge {% if item.avg_score >= 7.5 %}score-high{% elif item.avg_score >= 5.0 %}score-mid{% else %}score-low{% endif %}">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                 </svg>
@@ -283,21 +277,8 @@
         <!-- Top Rated Releases -->
         <section class="glass-panel">
             <div class="panel-header">
-                <div class="panel-title-with-icon">
-                    <span class="svg-icon-box icon-green" aria-hidden="true">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                            <path d="M4 22h16"></path>
-                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-                        </svg>
-                    </span>
-                    <div>
-                        <h2 class="panel-title">En Yüksek Puanlılar</h2>
-                        <p class="panel-subtitle">5 kriter ortalamasına göre zirvedeki albüm ve single'lar</p>
-                    </div>
+                <div class="editorial-heading-block">
+                    <h2 class="panel-title">Zirvedekiler. <span class="muted-runon">5 kriter ortalaması.</span></h2>
                 </div>
                 <a href="{{ url_for('leaderboard') }}" class="btn btn-ghost btn-sm">Tümünü Gör</a>
             </div>
@@ -323,7 +304,7 @@
                                 </div>
                             </div>
                             <div class="top-row-score">
-                                <div class="big-score-pill {% if item.avg_score >= 8.5 %}score-high{% elif item.avg_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                <div class="big-score-pill {% if item.avg_score >= 7.5 %}score-high{% elif item.avg_score >= 5.0 %}score-mid{% else %}score-low{% endif %}">
                                     {{ "%.2f"|format(item.avg_score) }}
                                 </div>
                                 <small>{{ item.rating_count }} oy</small>
@@ -341,16 +322,8 @@
         <!-- Recent Community 5-Criteria Reviews -->
         <section class="glass-panel">
             <div class="panel-header">
-                <div class="panel-title-with-icon">
-                    <span class="svg-icon-box icon-indigo" aria-hidden="true">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                    </span>
-                    <div>
-                        <h2 class="panel-title">Son Değerlendirmeler</h2>
-                        <p class="panel-subtitle">Topluluğun son 5 kriterli albüm ve single analizleri</p>
-                    </div>
+                <div class="editorial-heading-block">
+                    <h2 class="panel-title">Son incelemeler. <span class="muted-runon">Topluluk notları.</span></h2>
                 </div>
             </div>
 
@@ -367,7 +340,7 @@
                                     </div>
                                 </a>
                                 <div class="feed-score-box">
-                                    <span class="big-score-pill {% if rev.overall_score|float >= 8.5 %}score-high{% elif rev.overall_score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                                    <span class="big-score-pill {% if rev.overall_score|float >= 7.5 %}score-high{% elif rev.overall_score|float >= 5.0 %}score-mid{% else %}score-low{% endif %}">
                                         {{ "%.1f"|format(rev.overall_score|float) }}/10
                                     </span>
                                     <a href="{{ url_for('profile', username=rev.username) }}" class="feed-user">@{{ rev.username }}</a>

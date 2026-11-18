@@ -40,7 +40,7 @@
                         <div class="top-row-artist" title="{{ item.artist }}">{{ item.artist }} • {{ item.year }} • {{ item.genre }}</div>
                     </div>
                     <div class="top-row-score">
-                        <div class="big-score-pill {% if item.avg_score >= 8.5 %}score-high{% elif item.avg_score >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                        <div class="big-score-pill {% if item.avg_score >= 7.5 %}score-high{% elif item.avg_score >= 5.0 %}score-mid{% else %}score-low{% endif %}">
                             {{ "%.2f"|format(item.avg_score) }} / 10
                         </div>
                         <small>{{ item.rating_count }} oy</small>

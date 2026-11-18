@@ -7,14 +7,15 @@
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Righteous&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='2.5') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='3.3') }}">
 </head>
 <body>
+    <!-- Subtle Kitsunebi Ambient Warmth -->
     <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
     <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
 
-    <!-- Floating Navigation Bar (ui-ux-pro-max rule: floating top-4 spacing) -->
+    <!-- Navigation Bar -->
     <div class="navbar-wrapper">
         <header class="navbar container">
             <div class="nav-inner">
@@ -22,10 +23,12 @@
                 <div class="nav-top-row">
                     <a href="{{ url_for('index') }}" class="brand">
                         <span class="brand-logo" aria-hidden="true">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <circle cx="12" cy="12" r="3"></circle>
-                                <path d="M6 12c0-1.7.7-3.2 1.8-4.2"></path>
+                            <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+                                <path d="M4 4L12 11L16 9.5L20 11L28 4L25.5 18.5L16 28L6.5 18.5L4 4Z" fill="currentColor"/>
+                                <path d="M7.5 18L16 26.5L14 19L7.5 18Z" fill="#0B0A0D" fill-opacity="0.3"/>
+                                <path d="M24.5 18L16 26.5L18 19L24.5 18Z" fill="#0B0A0D" fill-opacity="0.3"/>
+                                <path d="M10 15.5L13.5 17L11 18L10 15.5Z" fill="#0B0A0D"/>
+                                <path d="M22 15.5L18.5 17L21 18L22 15.5Z" fill="#0B0A0D"/>
                             </svg>
                         </span>
                         <span class="brand-text">kitsu<span class="brand-dot">.ratings</span></span>
@@ -64,7 +67,7 @@
                             type="text"
                             name="q"
                             id="globalSearchInput"
-                            placeholder="Albüm, single veya sanatçı ara... (Daft Punk, Tarkan, Radiohead)"
+                            placeholder="Albüm, single veya sanatçı ara..."
                             value="{{ request.args.get('q', '') }}"
                         />
                         <kbd class="search-shortcut" aria-hidden="true">↵</kbd>

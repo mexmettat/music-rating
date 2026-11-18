@@ -361,7 +361,7 @@
                                 <small>{{ rev.updated_at[:10] if rev.updated_at else '' }}</small>
                             </div>
                         </a>
-                        <div class="big-score-pill {% if rev.overall_score|float >= 8.5 %}score-high{% elif rev.overall_score|float >= 7.0 %}score-mid{% else %}score-low{% endif %}">
+                        <div class="big-score-pill {% if rev.overall_score|float >= 7.5 %}score-high{% elif rev.overall_score|float >= 5.0 %}score-mid{% else %}score-low{% endif %}">
                             {{ "%.2f"|format(rev.overall_score|float) }} / 10
                         </div>
                     </div>
